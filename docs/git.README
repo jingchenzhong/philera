@@ -1,0 +1,8 @@
+git clone git@github.com:phil/philera.git
+cd philera
+git remote add upstream git://github.com/octocat/philera
+git fetch upstream
+git push origin master
+git fetch upstream
+git merge upstream/master
+

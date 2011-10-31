@@ -1,0 +1,6 @@
+使用bsmi（繁体中文），gbsn（简体中文），min（日文），mj（韩文）;
+查阅/usr/share/texmf-dist/tex/latex/cjk/texinput/UTF8/*.fd
+
+latex test.tex
+dvipdf test.dvi test.pdf
+
