@@ -1,0 +1,30 @@
+curl - 下载上传工具
+基本下载：
+$ curl -O "http://blueapple.org/curl/[1-10].jpg"
+连续下载1.jpg, 2.jpg ... 10.jpg
+续传文件：
+$ curl -c -o "brokenfile" "ftp://ftp.server.com/path/file"
+分割下载：
+$ curl -r 0-40960 -o "rose.part1" "http://blueapple.infor.org/rose.jpg" & \
+curl -r 40961-81920 -o "rose.part2" "http://blueapple.infor.org/rose.jpg" & \
+curl -r 81921-125068 -o "rose.part3" "http://blueapple.infor.org/rose.jpg"&
+$ cat rose.part* > rose.jpg
+查找字典：
+$ curl "dict://dict.org/d:apple"
+上传文件：
+$ curl -T "files" -u user:passwd "ftp://ftp.server.com/path/filename"
+-c可支持续传
+POST：
+curl -v -A "$ua" -D "$cookie" -b "$cookie" -o page.html -d "$form" -e "$url1" "$url"
+
+-v 详细信息
+-A "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)" useraent 
+-x 10.144.1.10:8080 使用代理
+-D cookies.txt 保存HTTP头，记录下cookies
+-b cookies.txt 使用记录下来的cookies
+-d "form" 使用POST方式提交表单
+-e "url" 引用页地址，确认这表单不是从外部提交的
+-L "url" 重定位到另个页面
+-c newcookies.txt 写一个新cookie文件
+-E mycert.pem 授权证书
+-H "Context-Type: text/xml" 自定义缺省HTTP头
