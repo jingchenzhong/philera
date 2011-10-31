@@ -1,8 +1,13 @@
 git clone git@github.com:phil/philera.git
 cd philera
-git remote add upstream git://github.com/octocat/philera
-git fetch upstream
+git pull
+git init
+git add .
+git config --global core.excludesfile=*.o
+git commit -a -m "comment"
+git branch BRANCK_NAME
+git checkout BRANCK_NAME
+git remote add origin git://github.com/octocat/philera
 git push origin master
-git fetch upstream
-git merge upstream/master
+git push origin BRANCK_NAME
 
