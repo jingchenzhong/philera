@@ -1,0 +1,257 @@
+<para>  
+    本章聚焦于Freescale设备如何管理高速缓存实现和内存翻译保护。
+</para>
+<itemizedlist>
+    <listitem>高速缓存行锁</listitem>
+    <listitem>高速缓存分区</listitem>
+    <listitem>扩展PID加载与存储</listitem>
+    <listitem>直接高速缓存清除</listitem>
+    <listitem>数据高速缓存块扩展操作</listitem>
+</itemizedlist>
+
+<sect1>
+     <title>Overview</title>
+    <para>
+        高速缓存模式的构架性定义包含假设弱次序内存并定义指令和
+        寄存器资源来支持哈佛结构的L1和通用L2高速缓存。
+    </para>
+    <para>
+        Power ISA嵌入式设备假设地址翻译总是被打开，并且内存被按
+        照页配置，那个翻译和权限被软件通过TLBs使用定义的指令和寄
+        存器来配置。
+    </para>
+    <para>
+        操作系统管理系统资源的物理定位通过设置被地址翻译机制使用
+        的表项。
+    </para>
+    <para>
+        体系把有效地址空间按照页分。每页表示有效地址翻译，权限
+        控制，和内存/高速缓存属性的最小单元。对于一个有效地址到
+        真实地址翻译的存在，一个有效的包含有效地址的页项必须在一
+        个翻译后备缓冲(TLB)。对于没有TLB项存在的地址会引起TLB缺失
+        异常。
+    </para>
+</sect1>
+
+ <sect1>
+     <title>Cache Model</title>
+     <para>
+         高速缓存模型定义了L1,L2高速缓存的资源
+         <itemizedlist>
+             <listitem>
+                 L1高速缓存有独立的指令和数据缓存。高速缓存通过使用
+                 物理的地址存取。
+             </listitem>
+             <listitem>
+                 L2缓存被组织为通用缓存。缓存被物理标签。
+                 L2缓存需要支持内核和主缓存的相干机制。
+             </listitem>
+         </itemizedlist>
+     </para>
+     <sect2>
+         <title>Storage Attribute and Coherency</title>
+         <para>
+             主数据缓存可能被实现来不做窥探（也就是说，与处理器外部
+             事务的相关性。系统软件需要负责维护相干性。因此设置M属性
+             没有意义。首选实现提供窥探给主数据缓存。
+         </para>
+         <para>
+             guarded属性应该在指令取回存取时被忽略。为了保护投机取访
+             问一个被保护的内存，软件应该将这些页标记为不可执行。
+         </para>
+         <para>
+             主指令缓存可能被实现来不做窥探。系统软件需要负责维护相
+             干性。
+         </para>
+     </sect2>
+     <sect2>
+         <title>CT Instruction Field</title>
+         <para>
+             指令有一个CT(cache target)域来指令一个缓存层次使用0
+             指定主缓存。2指定L2缓存。
+         </para>
+     </sect2>
+     <sect2>
+         <title>Cache Control Instructions</title>
+         <itemizedlist>
+             <listitem>Data Cache Block Touch dcbt</listitem>
+             <listitem>Data Cache Block Touch for 
+                 Store dcbtst</listitem>
+             <listitem>Data Cache Block Zero dcbz</listitem>
+             <listitem>Data Cache Block Store dcbst</listitem>
+             <listitem>Data Cache Block Flush dcbf</listitem>
+             <listitem>Data Cache Block Allocate dcba</listitem>
+             <listitem>Data Cache Block Invalidate dcbi</listitem>
+             <listitem>Instruction Cache Block Invalidate
+             icbi</listitem>
+             <listitem>Instruction Synchronize isync</listitem>
+             <listitem>Instruction Cache Block Touch icbt</listitem>
+         </itemizedlist>
+         <para>
+             缓存块锁指令:
+         </para>
+         <itemizedlist>
+             <listitem>Data Cache Block Lock Clear dcblc</listitem>
+             <listitem>Data Cache Block Touch and Lock 
+             Set dcbtls</listitem>
+             <listitem>Data Cache Block Touch for Store
+             and Lock Set dcbtstls</listitem>
+             <listitem>Instruction Cache Block Lock Clear 
+             icblc </listitem>
+         <listitem>Instruction Cache Block Touch
+         and Lock Set icbtls</listitem>
+         </itemizedlist>
+     </sect2>
+ </sect1>
+
+ <sect1>
+     <title>Special Cache Management</title>
+     <sect2>
+         <title>Cache Line Locking</title>
+         <para>
+             缓存锁允许软件指导缓存保留延迟敏感的数据对于快速
+             访问有效。
+         </para>
+     <sect3>
+         <title>Cache Line Lock Set and Clear Instructions</title>
+         <para>
+             MSR[UCLE]，用户模式下缓存锁使能位，决定缓存行锁指令
+             是否能在用户模式下被执行。
+         </para>
+         <para>
+             缓存行锁指令：dcbtls,dcbtstls,icbtls
+         </para>
+         <para>
+             rA, rB操作数构成一个有效地址标识被锁的行。CT域指示哪
+             一层缓存是目标。锁缓存指令不能被投机执行。
+         </para>
+         <para>
+             解锁指令：dcblc, icblc
+         </para>
+         <para>
+             软件可能清除所有在缓存的锁，对于主缓存，通过设置lock
+             flash clear位。
+         </para>
+         <para>
+             缓存行也可能被隐式解锁：
+             <itemizedlist>
+                 <listitem>一个锁住的行被置无效通过dcbi
+                 dcbf，icbi指令</listitem>
+             <listitem>一个击中被锁行能要求行被置无效
+                 如果数据被修改从外部到处理器，或如果另一个
+                 处理器显式使此行无效。</listitem>
+             <listitem>包含被锁行的全部缓存被置无效。
+             </listitem>
+             </itemizedlist>
+         </para>
+     </sect3>
+     <sect3>
+         <title>Error Conditions</title>
+         <para>
+             带有一个锁设置指令的地址没有合适的权限将引起数据存储
+             中断。缓存锁和清除操作会失败由于限制的用户模式访问。
+         </para>
+     </sect3>
+     <sect3>
+         <title>Overlocking</title>
+         <para>
+             如果所有有效的方法在给定缓存集合里都被锁了，那么请求
+             的行不被锁，这叫做overlocking－过度锁。L1CSR0[DCLO],
+             L1CSR1[ICLO].L2CSR[L2LO]。
+         </para>
+         <para>
+             一个处理器可能允许使用请求行替换已经存在的被锁行，在
+             锁过度时。
+         </para>
+     </sect3>
+     <sect3>
+         <title>Unable to Lock Conditions</title>
+         <para>
+             如果没有异常，没有过度锁情况，设置一个锁也可能失败:
+             <itemizedlist>
+                 <listitem>目标地址被设置为禁止缓存，或者
+                 地址存储属性使用了不支持锁的相干协议。</listitem>
+                 <listitem>目标缓存被禁止活没有。</listitem>
+                 <listitem>CT域包含了一个不支持的值</listitem>
+                 <listitem>任何其它实现相关错误条件</listitem>
+             </itemizedlist>
+         </para>
+         <para>
+             如果一个不可锁条件出现，这个锁指令相当于NOP。如果目标
+             是数据缓存，那么L1CSR0[DCUL]被设置。
+         </para>
+     </sect3>
+     <sect3>
+         <title>Cache Locking (UserMode) Exceptions</title>
+         <para>
+             数据存储中断产生，SRR0,SRR1,MSR,ESR被修改。
+             <itemizedlist>
+                 <listitem>SRR0被设置为产生中断指令地址</listitem>
+                 <listitem>SRR1被设置为中断时MSR内容</listitem>
+                 <listitem>MSR[CE,ME,DE]不变,其它清除</listitem>
+                 <listitem>ESR[DLK]如果是数据缓存被设置。</listitem>
+                 <listitem>ESR[ILK]如果是指令缓存被设置</listitem>
+                 <listitem>其余ESR位被清除</listitem>
+             </itemizedlist>
+         </para>
+     </sect3>
+     </sect2>
+
+     <sect2>
+         <title>Direct Cache Flushing</title>
+         <para>
+             直接缓存刷新允许编程者刷新或置无效缓存通过指定缓存
+             集合活缓存相。
+         </para>
+         <para>
+             L1CFG0[CFISWA]，标识直接缓存刷新特性。L1FINV0[CSET]
+             ,L1FINV0[CWAY]
+         </para>
+         <para>
+             直接缓存刷新只对L1数据缓存和通用缓存有影响。
+         </para>
+     </sect2>
+     <sect2>
+         <title>Cache Way Partitioning</title>
+         <para>
+             允许相在一个通用L1缓存被配置来支持或者数据或者指令缺失
+             行填充置换，被实现在L1CSR0,L1CFG0里。
+         </para>
+     </sect2>
+     <sect2>
+         <title>Interaction with Cache Locking Operations</title>
+         <para>
+         </para>
+     </sect2>
+ </sect1>
+
+ <sect1>
+     <title>Memory and Cache Coherency</title>
+     内存一致性系统的主要目标是提供一样的内存镜像给所有使用系统
+     的设备.
+     <sect2>
+         <title>Memory/Cache Access Attributes (WIMGE Bits)</title>
+         <itemizedlist>
+             <listitem>Write-through (W bit)</listitem>
+             <listitem>Caching-inhibited (I bit)</listitem>
+             <listitem>Memory-coherency-required (M bit)</listitem>
+             <listitem>Guarded (G bit)</listitem>
+             <listitem>Endianness (E bit)</listitem>
+             <listitem>User-definable (U0,U1,U2,U3)MAS3[54-57]
+             </listitem>
+             <listitem>交替相关模式,MAS2[ACM]</listitem>
+             <listitem>可变长度编码(VLE) MAS2[VLE]</listitem>
+         </itemizedlist>
+     </sect2>
+     <sect2>
+         <title>Write-Through Attribute (W)</title>
+         <para>
+         </para>
+     </sect2>
+ </sect1>
+
+ <sect1>
+     <title>MMU Architecture</title>
+     <para>
+     </para>
+ </sect1>

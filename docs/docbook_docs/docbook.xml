@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book
+PUBLIC "-//OASIS//DTD DocBook XML V4.5/zh_cn" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+[
+<!ENTITY section_5 SYSTEM "cache_and_mmu.xml">
+]>
+<book>
+    <info>
+        <title>
+                            EREF: A Programmer's Reference Manual for Freescale Embedded Processors
+        </title>
+        <copyright><year>2011</year><hold>nicephil</hold></copyright>
+        <email>nicephil@gmail.com</email>
+    </info>
+
+        <chapter>
+            <title>
+                Overview
+            </title>
+        </chapter>
+
+        <chapter>
+            <title>
+                Register Model
+            </title>
+        </chapter>
+
+        <chapter>
+            <title>
+                Instruction Model
+            </title>
+        </chapter>
+
+        <chapter>
+            <title>
+                Interrupts and Exceptions
+            </title>
+        </chapter>
+
+        <chapter>
+            <title>
+                Cache and MMU Architecture
+            </title>
+            &section_5; <!--5-->
+        </chapter>
+
+        <chapter>
+            <title>
+                Timer Facilities
+            </title>
+        </chapter>
+
+        <chapter>
+            <title>
+                Instruction Set
+            </title>
+        </chapter>
+
+        <chapter>
+            <title>
+                Debug Facilities
+            </title>
+        </chapter>
+
+        <appendix>
+            <title>
+                Instruction Set Listings
+            </title>
+        </appendix>
+
+        <appendix>
+            <title>
+                Simplified Mnemonics
+            </title>
+        </appendix>
+
+        <appendix>
+            <title>
+                Programming Examples
+            </title>
+        </appendix>
+
+        <appendix>
+            <title>
+                Floating-Point Models
+            </title>
+        </appendix>
+
+        <appendix>
+            <title>
+                Guidelines for 32-Bit Implementations
+            </title>
+        </appendix>
+
+        <appendix>
+            <title>
+                Embedded Floating-Point Results
+            </title>
+        </appendix>
+
+</book>
