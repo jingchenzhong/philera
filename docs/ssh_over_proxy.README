@@ -1,0 +1,26 @@
+HOME:
+需要一个HTTP代理，如Apache的代理模块，或者squid，
+需要启用HTTPS，FTP和其他协议在代理配置里
+需要sshd运行在443端口，一般HTTPS在443端口
+
+取代HTTP代理，也可以使用SOCKS代理隧道。
+ssh -D 8080 nicephil@shell.cjb.net -p 443
+
+WORK:
+需要一个SSH客户端，能发起CONNECT请求通过公司HTTP代理。
+Windows可以使用Putty或者Linux下openssh和corkscrew通过
+代理到HOME电脑的443端口
+修改~/.ssh/config文件：
+ProxyCommand corkscrew 10.144.1.10 8080 %h %p
+配置ssh客户端来端口重映射-本地端口8080,到远端的localhost:80
+ssh -L 8080:localhost:80 nicephil@shell.cjb.net -p 443
+
+WITHOUT CONNECT
+如果CONNECT不允许，需要使用正常HTTP建立隧道，使用httptunnel。
+服务器端hts运行在HOME电脑，监听80端口，客户端htc运行在WORK
+电脑。
+在HOME上，传入链接在80端口，映射到ssh的22端口
+hts -F localhost:22 80
+在work上，使用公司代理链接到HOME，并映射到本地8022端口
+
+htc -P proxy.corp.com:80 -F 8022 server.at.home:80
