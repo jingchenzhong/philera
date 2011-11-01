@@ -1,7 +1,7 @@
 #!/bin/bash
-if [[ $# < 2 ]]
+if [[ $# < 3 ]]
 then
-    echo "Usage: $0 <year> <month> <day> <proxy>"
+    echo "Usage: $0 <year> <month> <day>"
     exit -1
 fi
 
@@ -18,10 +18,13 @@ rm -rvf "$cookie" "$page_1"
 
 
 
-export http_proxy="http://$4"
-curl -v -A "$ua" -D "$cookie" -b "$cookie" -o "$page_1" -d "$form_1" -e "$url_1" "$url_1"
+curl -A "$ua" -D "$cookie" -b "$cookie" -o "$page_1" -d "$form_1" -e "$url_1" "$url_1"
+if (( $? != 0 ))
+then
+    exit -1
+fi
 
 
-echo "=========>$http_proxy"
+echo "=========>errcode:$? $http_proxy"
 
     

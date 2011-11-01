@@ -51,11 +51,16 @@ page=page.html
 rm -rvf "$cookie" "$page"
 
 
-echo "$form"
 
-
-
-curl -v -A "$ua" -o page.html -D "$cookie"  "$url1"
+curl -A "$ua" -o page.html -D "$cookie"  "$url1"
+if (( $? != 0 ))
+then
+    exit -1
+fi
 sleep 1
-curl -v -A "$ua" -D "$cookie" -b "$cookie" -o page.html -d "$form" -e "$url1" "$url"
+curl -A "$ua" -D "$cookie" -b "$cookie" -o page.html -d "$form" -e "$url1" "$url"
+if (( $? != 0 ))
+then
+    exit -1
+fi
 sleep 2

@@ -15,11 +15,12 @@ do
     bb=`printf "%02x" $(( ${RANDOM}%256|160 ))`
     cc=`printf "%02d" $(( ${RANDOM}%100 ))`
     dd=`printf "%02d" $(( ${RANDOM}%100 ))`
-    name="%B5%A4%CA%${aa}%B7%${bb}"
+    name="%B5%A4%CB%${aa}%B9%${bb}"
     card=${card:1:18}
-    tele="0379-65${dd}${cc}${dd}"
+    tele="0379-93${dd}${cc}${dd}"
     #echo $name $card $tele
     ./auto_sub.sh $name $card $tele
+    cat "page.html"
     echo ""
     echo "put proxy server ip:"
     echo ""
