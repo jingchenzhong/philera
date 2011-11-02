@@ -1,0 +1,8 @@
+
+2011-11-2:
+base on WindRiver4
+1. mtd-utils patches
+./WR/wrlinux-4/layers/wrll-kernel/tools/mtd-utils/patches/0020-fix_mtd-utils_for_archlinux.patch
+a. unused variable in error.c
+b. undefined behavior in libubigen.c
+c. unused variable in pfi2bin.c
