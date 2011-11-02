@@ -1,6 +1,13 @@
 #!/bin/bash
 
 array=`cat page_1.html`
+array=${array:1}
+if [[ $1 != "" ]]
+then
+    declare -i b=21
+    (( b=b*$1 ))
+    array=${array:$b}
+fi
 
 oldifs="$IFS"
 IFS=","
@@ -15,11 +22,11 @@ do
     bb=`printf "%02x" $(( ${RANDOM}%256|160 ))`
     cc=`printf "%02d" $(( ${RANDOM}%100 ))`
     dd=`printf "%02d" $(( ${RANDOM}%100 ))`
-    name="%B6%A0%CB%${aa}%B9%${bb}"
+    name="%B3%A2%CB%${aa}%B9%${bb}"
     card=${card:1:18}
-    tele="0379-93${dd}${cc}${dd}"
-    #echo $name $card $tele
-    ./auto_sub.sh $name $card $tele
+    tele="0379-39${dd}${cc}${dd}"
+    echo "name=$name card=$card tele=$tele socks=$2"
+    ./auto_sub.sh $name $card $tele "$2"
     cat "page.html"
     echo ""
     echo "put proxy server ip:"
@@ -28,7 +35,7 @@ do
     echo "===================================="
     echo "i=${i} http_proxy=${http_proxy}"
     echo "===================================="
-    sleep 160
+    sleep 60
     #read proxy
     #if [[ $proxy != "" ]]
     #then
