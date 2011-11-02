@@ -1,0 +1,11 @@
+中文编码在LINUX默认使用UTF-8，但是Windows下使用GB2312。
+所以URL中的中文需要做调整
+ZHCON:
+默认是GB2312编码
+zhcon --utf8是GB2312
+locale可列举出当前所设置编码情况
+
+VIM:
+termencoding=utf-8
+encoding=utf-8
+

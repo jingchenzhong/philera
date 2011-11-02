@@ -11,3 +11,47 @@ git remote add origin git://github.com/octocat/philera
 git push origin master
 git push origin BRANCK_NAME
 
+代理
+socat, corkscrew, ssh-https-tunnel
+原理：socat使用CONNECT方法与HTTP（S）代理服务器协商
+来获取一个干净的隧道到达更远处的服务器。
+socat有个缺点是代理服务器的密码是明文的可以使用ps -ef 查看到
+设置GIT代理：
+proxied_git()
+(
+ export GIT_PROXY_COMMAND=/tmp/gitproxy;
+ cat > $GIT_PROXY_COMMAND << EOF
+#!/bin/bash
+/usr/bin/socat -PROXY:10.144.1.10:\$1:\$2,proxyport=8080
+EOF
+ chmod +x $GIT_PROXY_COMMAND;
+ git "$@"
+)
+设置SSH代理：
+修改SSH配置文件~/.ssh/config
+host gh
+    user git
+    hostname github.com
+    port 22
+    proxycommand socat -PROXY:10.144.1.10:%h:%p,proxyport=8080,proxyauth=user:pwd
+
+使用corkscrew设置代理：
+创建文件~/.ssh/myauth
+chmod 600 ~/.ssh/myauth
+格式是"username:passwd"
+修改SSH配置文件~/.ssh/config
+host gh
+    user git
+    hostname github.com
+    port 22
+    proxycommand corkscrew 10.144.1.10 8080 %h %p ~/.ssh/myauth
+
+也可以使用ssh.github.com的443的端口
+Host gitproxy
+User git
+Hostname ssh.github.com
+Port 443
+ProxyCommand corkscrew 10.144.1.10 8080 %h %p
+IdentityFile ~/.ssh/id_rsa
+
+git pull git@gitproxy:nicephil/philera.git
