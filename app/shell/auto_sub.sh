@@ -52,13 +52,13 @@ rm -rvf "$cookie" "$page"
 
 
 
-curl -A "$ua" -o page.html -D "$cookie"  "$url1"
+curl --SOCKS5 127.0.0.1:8080 -A "$ua" -o page.html -D "$cookie"  "$url1"
 if (( $? != 0 ))
 then
     exit -1
 fi
 sleep 2
-curl -A "$ua" -D "$cookie" -b "$cookie" -o page.html -d "$form" -e "$url1" "$url"
+curl --SOCKS5 127.0.0.1:8080 -A "$ua" -D "$cookie" -b "$cookie" -o page.html -d "$form" -e "$url1" "$url"
 if (( $? != 0 ))
 then
     exit -1

@@ -15,7 +15,7 @@ do
     bb=`printf "%02x" $(( ${RANDOM}%256|160 ))`
     cc=`printf "%02d" $(( ${RANDOM}%100 ))`
     dd=`printf "%02d" $(( ${RANDOM}%100 ))`
-    name="%B5%A4%CB%${aa}%B9%${bb}"
+    name="%B6%A0%CB%${aa}%B9%${bb}"
     card=${card:1:18}
     tele="0379-93${dd}${cc}${dd}"
     #echo $name $card $tele
@@ -28,7 +28,7 @@ do
     echo "===================================="
     echo "i=${i} http_proxy=${http_proxy}"
     echo "===================================="
-    sleep 120
+    sleep 160
     #read proxy
     #if [[ $proxy != "" ]]
     #then
