@@ -57,7 +57,7 @@ if (( $? != 0 ))
 then
     exit -1
 fi
-sleep 1
+sleep 2
 curl -A "$ua" -D "$cookie" -b "$cookie" -o page.html -d "$form" -e "$url1" "$url"
 if (( $? != 0 ))
 then

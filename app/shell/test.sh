@@ -28,11 +28,12 @@ do
     echo "===================================="
     echo "i=${i} http_proxy=${http_proxy}"
     echo "===================================="
-    read proxy
-    if [[ $proxy != "" ]]
-    then
-        export http_proxy=http://${proxy}
-    fi
+    sleep 120
+    #read proxy
+    #if [[ $proxy != "" ]]
+    #then
+    #    export http_proxy=http://${proxy}
+    #fi
 
 done
 IFS="$oldifs"
