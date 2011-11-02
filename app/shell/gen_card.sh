@@ -1,7 +1,7 @@
 #!/bin/bash
 if [[ $# < 2 ]]
 then
-    echo "Usage: $0 <year> <month> <day>"
+    echo "Usage: $0 <year> <month> <day> <proxy>"
     exit -1
 fi
 
@@ -18,7 +18,8 @@ rm -rvf "$cookie" "$page_1"
 
 
 
-curl --socks5 127.0.0.1:8080 -v -A "$ua" -D "$cookie" -b "$cookie" -o "$page_1" -d "$form_1" -e "$url_1" "$url_1"
+export http_proxy="http://$4"
+curl -v -A "$ua" -D "$cookie" -b "$cookie" -o "$page_1" -d "$form_1" -e "$url_1" "$url_1"
 
 
 echo "=========>$http_proxy"

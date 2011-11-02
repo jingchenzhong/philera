@@ -1,10 +1,10 @@
+Reference: http://daniel.haxx.se/docs/sshproxy.html
 HOME:
-需要一个HTTP代理，如Apache的代理模块，或者squid，
-需要启用HTTPS，FTP和其他协议在代理配置里
-需要sshd运行在443端口，一般HTTPS在443端口
-
-取代HTTP代理，也可以使用SOCKS代理隧道。
-ssh -D 8080 nicephil@shell.cjb.net -p 443
+1. 需要一个HTTP代理，如Apache的代理模块，或者squid，
+假设这个代理在80端口
+可能需要启用HTTPS，FTP和其他协议在代理配置里
+2. 需要sshd运行在443端口，一般HTTPS在443端口
+保证你的Apache或者其他httpd服务器没有使用443端口
 
 WORK:
 需要一个SSH客户端，能发起CONNECT请求通过公司HTTP代理。
@@ -14,9 +14,30 @@ Windows可以使用Putty或者Linux下openssh和corkscrew通过
 ProxyCommand corkscrew 10.144.1.10 8080 %h %p
 配置ssh客户端来端口重映射-本地端口8080,到远端的localhost:80
 ssh -L 8080:localhost:80 nicephil@shell.cjb.net -p 443
+配置你的浏览器代理为localhost:8080
 
-WITHOUT CONNECT
-如果CONNECT不允许，需要使用正常HTTP建立隧道，使用httptunnel。
+FLOWCHART:
+work's browser ==> work's local port 8080 ==> SSH 
+===> work's http proxy 10.144.1.10 ==> 
+home's SSH port 443 ==> home's http proxy localhost:80 ==> http server
+
+SOCKSPROXY_WAY:
+在HOME不需要运行HTTP代理服务器，可使用隧道作为SOCKS代理，这样不需要
+你在HOME上运行任何东西。它让你建立起到HOME的隧道，并使用隧道为SOCKS
+代理而不是使用一个HTTTP代理在隧道的另一端。这样你不需要运行其他软件
+在HOME上，只需要ssh服务器本身。
+
+可以建立起隧道/SOCKS代理在WORK上：
+ssh -D 8080 nicephil@shell.cjb.net -p 443
+
+可能仍然需要配置“ProxyCommand”来确保你的SSH客户端能够到达HOME
+之后配置浏览器使用SOCKS代理localhost:8080
+
+
+WITHOUT_CONNECT:
+如果CONNECT不允许到你的HOME的443端口，你可以尝试其他端口
+如果不能够找到可使用的端口，需要使用正常HTTP建立隧道，
+使用httptunnel。
 服务器端hts运行在HOME电脑，监听80端口，客户端htc运行在WORK
 电脑。
 在HOME上，传入链接在80端口，映射到ssh的22端口
@@ -24,3 +45,7 @@ hts -F localhost:22 80
 在work上，使用公司代理链接到HOME，并映射到本地8022端口
 
 htc -P proxy.corp.com:80 -F 8022 server.at.home:80
+
+COMMENTS:
+对于其他协议，要确保工作的SSH会话映射更多端口到HOME机器。
+对于不同协议有不同设置，例如IRC，需要IRC bouncer运行在HOME上
