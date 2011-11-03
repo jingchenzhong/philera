@@ -18,7 +18,7 @@ rm -rvf "$cookie" "$page_1"
 
 
 
-curl -A "$ua" -D "$cookie" -b "$cookie" -o "$page_1" -d "$form_1" -e "$url_1" "$url_1"
+curl $4 -A "$ua" -D "$cookie" -b "$cookie" -o "$page_1" -d "$form_1" -e "$url_1" "$url_1"
 if (( $? != 0 ))
 then
     exit -1
