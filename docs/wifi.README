@@ -1,0 +1,15 @@
+1) install wireless_tools
+yaourt -S wireless_tools inetutils net-tools dnsutils iproute2
+ifconfig, route - net-tools
+nslookup, dig - dnsutils
+ftp, telnet - inetutils
+ip - iproute2
+2) configure wlan0
+ifconfig eth0 down
+ip link set wlan0 down
+iwconfig wlan0 mode ad-hoc
+iwlist wlan0 scan
+iwconfig wlan0 essid 蜜罐 key s:1233
+route add default dev wlan0 gw 192.168.0.1
+ifconfig wlan0 192.168.0.70 netmask 255.255.255.0 broadcast 192.168.0.255
+

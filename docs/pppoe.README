@@ -1,0 +1,10 @@
+yaourt -S ppp rp-pppoe
+
+pppoe-setup
+name: hz0417
+dns: server
+passwd: 1234
+
+pppoe-start
+route add default dev ppp0
+
