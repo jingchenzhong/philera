@@ -1,0 +1,45 @@
+!!=============================================================================
+!! RXVT-unicode setting
+!!=============================================================================
+!设置字体分辨率
+!Xft.dpi:96
+!设置字体
+!URxvt.font:-misc-fixed-bold-r-normal--14-*-*-*-*-*-iso10646-1,xft:WenQuanYi Bitmap Song:size=10
+URxvt.font:xft:Bitstream Vera Sans Mono:Bold:size=14, \
+                                             xft:WenQuanYi Zen Hei:size=16, \
+                                             9x15bold, \
+                                             -misc-fixed-bold-r-normal--15-140-75-75-c-90-iso10646-1, \
+                                             -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso10646-1, \
+                                             [codeset=cp936]xft:serif:antialias=false, \
+                                             xft:simsun:antialias=false
+Rxvt.multibyte_cursor:1
+Rxvt.multichar_encoding:utf-8
+!Rxvt.font:-b&h-lucidatypewriter-medium-r-normal-*-14-*-*-*-*-*-iso8859-*
+!Rxvt.mfont:-*-*-medium-r-normal-*-16-*-*-*-c-*-gb*-*
+!URxvt.font:xft:Monaco:size=10:antialias=true,xft:LiHei Pro:Bold:size=10:antialias=true
+!URxvt.boldFont:xft:Monaco:Bold:size=10:antialias=true,xft:LiHei Pro:Bold:size=10:antialias=t
+!URxvt.font:9x15bold,xft:Kochi Gothic
+!URxvt.font:9x15bold,xft:Bitstream Vera Sans Mono:size=14
+!颜色
+Rxvt.background:black
+Rxvt.foreground:white
+Rxvt.colorBD:yellow
+Rxvt.colorUL:green
+!滚动条
+Rxvt.scrollBar:False
+Rxvt.scrollBar_right:False
+Rxvt.scrollBar_floating:False
+Rxvt.scrollBar_bottom:False
+Rxvt.scrollstyle:plain
+!屏幕缓冲
+Rxvt.saveLines:10000
+Rxvt.color12:DodgerBlue
+Rxvt.menu:/etc/X11/rxvt.menu
+Rxvt.preeditType:Root
+!输入法设置
+!inputMethod:xim  
+!透明效果
+Rxvt.transparent:true
+Rxvt.shading:30
+URxvt.title:RXVT-UNICODE
+Urxvt.preeditType:Root

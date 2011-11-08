@@ -1,0 +1,14 @@
+[color]
+    diff = auto
+[diff]
+    external = git_diff_wrapper
+[pager]
+    diff = 
+[user]
+	name = nicephil
+	email = nicephil@gmail.com
+[github]
+	user = nicephil
+	token = dd1d440d87c3b08c3e49cf0cc7079d67
+[http]
+	proxy = http://10.144.1.10:8080

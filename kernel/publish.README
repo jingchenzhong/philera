@@ -1,0 +1,20 @@
+BSP patches go to SS_WRL4/baselayer from HW vendor
+6wind patches go to SS_WRL4/6windlayer
+NOTE:patches in fp_all are applied before kernel specific patches
+other patches go to SS_WRL4/flexilayer
+patches to more than one board go to fp_all
+.scc
+patches to one board go to <board>/linux
+
+mkdir build_dir
+cd build_dir
+../SS_WRL4/scripts/configure_kernel.sh fp_octwnd_56xx
+cd build
+make wrs_kernheaders.addpkg
+make wrs_kernheaders.create
+cp linux/wrs-kernheaders-4.0.tgz SS_WRL4/6windlayer/fp_octwnd/packages/
+vi SS_WRL4/6windlayer/fp_octwnd/dist/wrs_kernheaders/Makefile.proto (MD5SUM and version)
+make wrs_kernheaders.patch
+
+
+
