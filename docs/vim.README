@@ -1,0 +1,7 @@
+omnicppcomplete c++ files
+
+find `pwd` -type f -name "*.cpp" -print -o \
+-type f -name "*.hpp" -print -o \
+    -type f -name "*.[sScChH]" -print > file.list
+cscope -bkq -i file.list
+ctags --c++-kinds=+p --fields=+iaS --extra=+q -L file.list
