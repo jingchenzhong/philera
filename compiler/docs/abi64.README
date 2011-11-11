@@ -1,0 +1,90 @@
+Data Types:
+Elf64_Addr 8 Unsigned program address
+Elf64_Half 2 Unsigned small integer
+Elf64_Off 8 Unsigned file offset
+Elf64_Sword 4 Signed medium integer
+Elf64_Sxword 8 Signed large integer
+Elf64_Word 4 Unsigned medium integer
+Elf64_Xword 8 Unsigned medium integer
+Elf64_Byte 1 Unsigned tiny integer
+Elf64_Section 2 Section index (unsigned)
+
+Fundamental Data Types:
+FT_unknown 0x0001
+FT_signed_char 0x0001 8-bit signed char
+FT_unsigned_char 0x0002 8-bit unsigned char
+FT_signed_short 0x0003 16-bit signed short
+FT_unsigned_short 0x0004 16-bit unsigned short
+FT_signed_int32 0x0005 32-bit signed int
+FT_unsigned_int32 0x0006 32-bit unsigned int
+FT_signed_int64 0x0007 64-bit signed long
+FT_unsigned_int64 0x0008 64-bit unsigned long
+FT_pointer32 0x0009 32-bit pointer
+FT_pointer64 0x000a
+FT_float32 0x000b
+FT_float64 0x000c
+FT_float128 0x000d
+FT_complex64 0x000e
+FT_complex128 0x000f
+FT_complex256 0x0010
+FT_void 0x0011
+FT_bool32 0x0012
+FT_bool64 0x0013
+FT_label32 0x0014
+FT_label64 0x0015
+
+FT_struct 0x0020
+FT_union 0x0021
+FT_enum 0x0022
+FT_typedef 0x0023
+FT_set 0x0024 Pascal:set
+FT_range 0x0025 Pascal:subrange of integer
+FT_member_ptr 0x0026 C++:member pointer
+FT_virtual_ptr 0x0027 C++:virtual pointer
+FT_class 0x0028 C++:class
+
+
+Type Qualifiers:
+MOD_pointer_to 0x01
+MOD_reference_to 0x02
+MOD_const 0x03
+MOD_volatile 0x04
+
+MOD_lo_user 0x80
+MOD_function 0x80
+MOD_array_of 0x81
+MOD_hi_user 0xff
+
+.MIPS.events and .MIPS.content using:
+LEB128, ULEB128 - (Unsigned) Little-Endian Base 128 numbers
+aa = 0x00003239 = 0000 0000 0000 0000 0011 0010 0011 1001
+start at the low-order end of an unsigned integer and chop it
+into 7-bit chunks, place each chunk into the low-order 7 bits
+of a byte.
+byte0 = _011 1001 = 0x39
+the high order bit on each byte except the last emitted byte
+byte0 = 1011 1001 = 0xB9
+several of the high-order bytes will be zero (unsigned) or copies
+of the sign bit (signed)
+aa = 0000 000_0 0000 0000 0000 0000 0110 0100
+byte1 = _110 0100 = 0x64
+
+result: B9 64
+
+do {
+    byte = low order 7 bits of value;
+    value >>= 7;
+    if (value != 0)
+        set high order bit of byte;
+    emit byte
+} while (vaule != 0);
+
+result = 0;
+shitf = 0;
+size = no, of bits in signed interger;
+while (true) {
+    byte = next byte in input;
+    result |= (low order)
+}
+
+
