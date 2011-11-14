@@ -1,0 +1,6 @@
+objdump -ldrRS hello > hello.objdump
+-l print line number
+-d disassamble program section
+-r relloc
+-R dynamic-relloc
+-S source code

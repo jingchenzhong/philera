@@ -907,6 +907,7 @@ main(n, t)
         printf("usage: otccelf file.c outfile\n");
         return 0;
     }
+
     dstk = strcpy(sym_stk = calloc(1, ALLOC_SIZE), 
                   " int if else while break return for define main ") + TOK_STR_SIZE;
     glo = data = calloc(1, ALLOC_SIZE);

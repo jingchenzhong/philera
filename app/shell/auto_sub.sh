@@ -33,9 +33,9 @@ jianyi66=&jianyi67=&jianyi68=&jianyi69=&jianyi70=&jianyi71=&jianyi72=&\
 jianyi73=&jianyi74=&name=$1&card=$2&\
 tele=$3&btn_submit2=%CC%EE%BA%C3%C1%CB%A3%AC%CC%E1%BD%BB"
 
-url1="http://www2.lyd.com.cn/20110419pingxuan/20111025_xinyongshe_IBSL.asp"
+url1="http://www2.lyd.com.cn/20110419pingxuan/20111108_jiaotongyinhang.asp"
 
-url="http://www2.lyd.com.cn/20110419pingxuan/20111025_xinyongshe_IBSL_sub.asp"
+url="http://www2.lyd.com.cn/20110419pingxuan/20111108_jiaotongyinhang_sub.asp"
 
 ua="Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)"
 
