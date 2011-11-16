@@ -33,3 +33,9 @@ static int x2 = 1;
 OFFSET TYPE VALUE
 指令修成方法：
 
+crt1.o: __start, hlt
+crti.o: _init, _fini
+crtbegin.o: __do_global_dtors_aux, frame_dummy, .fini .init
+crtend.o: __do_global_ctors_aux, .init
+
+ld crt1.o crti.o [user_objs] [system_libraries] crtn.o
