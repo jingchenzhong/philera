@@ -1,6 +1,17 @@
-objdump -ldrRS hello > hello.objdump
--l print line number
--d disassamble program section
--r relloc
--R dynamic-relloc
--S source code
+objdump -lxsdtTS hello > hello.objdump
+-l 打印行号
+-s 将所有段内容以十六进制打印 
+-d 将所有包含指令段反汇编
+-S 打印源码
+-h 各段基本信息
+-x 打印更多信息
+-t 打印符号表项
+-T 打印动态符号表项
+-r 重定位
+-R 
+
+objcopy 
+--info 列举支持的目标文件类型和体系
+-I 输入文件格式
+-O 输出文件格式
+-B 输出文件体系

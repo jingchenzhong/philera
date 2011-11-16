@@ -123,5 +123,96 @@ EF_MIPS_ARCH_ASE_MDMX
 EF_MIPS_ARCH_ASE_M16
 EF_MIPS_ARCH
 
+ELF-64 Section Header:
+sh_name Elf64_Word
+sh_type Elf64_Word
+sh_flags Elf64_XWord
+sh_addr Elf64_Addr
+sh_offset Elf64_Off
+sh_size Elf64_Xword
+sh_link Elf64_Word
+sh_info Elf64_Word
+sh_addralign Elf64_Xword
+sh_entsize Elf64_Xword
+
+Section Header sh_type:
+SHT_NULL 0 无效段
+SHT_PROGBITS 1 程序段，代码段，数据段都是这种类型
+SHT_SYMTAB 2 符号表
+SHT_STRTAB 3 字符串表
+SHT_RELA 4 带直接地址的重定位表
+SHT_HASH 5 符号表的哈希表
+SHT_DYNAMIC 6 动态链接信息
+SHT_NOTE 7 提示性信息
+SHT_NOBITS 8 该段在文件中没有内容，例如.bss段
+SHT_REL 9 不带直接地址的重定位信息
+SHT_SHLIB 10 保留
+SHT_DNYSYM 11 动态链接符号表
+
+SHT_MIPS_LIBLIST 0x70000000 DSO库信息
+SHT_MIPS_MSYM 0x70000001 MIPS符号表扩展
+SHT_MIPS_CONFILICT 0x70000002 带有DSO定义符号的符号冲突
+SHT_MIPSGPTAB 0x70000003 全局指针表
+SHT_MIPS_UCODE 0x70000004 保留
+SHT_MIPS_DEBUG 0x70000005 保留
+SHT_MIPS_REGINFO 0x70000006 寄存器使用信息
+SHT_MIPS_PACKAGE 0x70000007 OSF保留
+SHT_MIPS_PACKSYM 0x70000008 OSF保留
+SHT_MIPS_RELD 0x70000009 动态重定位
+unused 0x7000000a
+SHT_MIPS_IFACE 0x7000000b 子程序接口信息
+SHT_MIPS_CONTENT 0x7000000c 段信息分类
+SHT_MIPS_OPTIONS 0x7000000d 通用选项
+SHT_MIPS_DELTASYM 0x7000001b Delta C++:符号表
+SHT_MIPS_DELTAINST 0x7000001c Delta C++:实例表
+SHT_MIPS_DELTACLASS 0x7000001d Delta C++:类表
+SHT_MIPS_DWARF 0x7000001e DWARF调试信息
+SHT_MIPS_DELTADECL 0x7000001f Delta C++:声明
+SHT_MIPS_SYMBOL_LIB 0x70000020 符号到库映射
+SHT_MIPS_EVENTS 0x70000021 事件定位
+SHT_MIPS_TRANSLATE 0x70000022 ???
+SHT_MIPS_PIXIE 0x7000002e 特定pixie段
+SHT_MIPS_XLATE 0x70000024 地址翻译表
+SHT_MIPS_XLATE_DEBUG 0x70000025 SGI内部地址翻译表
+SHT_MIPS_WHIRL 0x700000026 媒介代码
+SHT_MIPS_EN_REGION 0x70000027 C++异常处理区域信息
+SHT_MIPS_XLATE_OLD 0x70000028 废弃
+SHT_MIPS_PDR_EXCEPTION 0x70000029 运行时程序描述符
+
+sh_flag:
+SHF_WRITE
+SHF_ALLOC 该段在进程空间中须分配空间
+SHF_EXECINSTR
+
+sh_link, sh_info: 如果段类型是跟链接相关的才有意义：
+SHT_DYNAMIC 该段使用的字符串在段表中的下标 0
+SHT_HASH   同上 0
+SHT_REL 该段使用的相应符号表在段表中的下标 该重定位表所作用的段在段表中的下标
+SHT_RELA 同上 0
+SHT_SYMTAB 操作系统相关 
+SHT_DYNSYM
+other SHN_UNDEF 0 
+
+.text 代码段 SHT_PROGBITS SHF_ALLOC+SHF_EXECINSTR
+.bss 未初始化数据段 SHT_NOBITS SHF_ALLOC+SHF_WRITE
+.data 初始化数据段 SHT_PROGBITS SHF_ALLOC+SHF_WRITE
+.data1  SHT_PROGBITS SHF_ALLOC_SHF_WRITE
+.rodata 只读数据 SHT_PROGBITS SHF_ALLOC
+.rodata1  SHT_PROGBITS SHF_ALLOC
+.comment 编译器版本信息 SHT_PROGBITS none
+.debug 调试信息  SHT_PROGBITS none
+.dynamic 动态链接信息 SHT_DYNMIC SHF_ALLOC+SHF_WRITE
+.hash 符号哈希表 SHT_HASH SHF_ALLOC
+.line 调试时行号 SHT_PROGBITS none
+.note 额外编译信息 SHT_NOTE none
+.strtab 字符串表 SHT_STRTAB SHF_ALLOC maybe
+.symtab 符号表 SHT_SYMTAB SHF_ALLOC maybe
+.shstrtab 段名表 SHT_STRTAB none
+.plt 动态链接跳转表
+.got 全局入口表
+.init 程序初始化代码段
+.fini 程序终结代码段
 
 
+
+自定义段名不能带., ELF可以拥有多个同名段
