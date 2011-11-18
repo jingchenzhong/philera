@@ -1,0 +1,48 @@
+
+gcc/crtend.o:     file format elf64-tradbigmips
+
+
+Disassembly of section .text:
+
+0000000000000000 <__do_global_ctors_aux>:
+   0:	67bdffe0 	daddiu	sp,sp,-32
+   4:	ffbc0010 	sd	gp,16(sp)
+   8:	3c1c0000 	lui	gp,0x0
+   c:	ffbf0018 	sd	ra,24(sp)
+  10:	0399e02d 	daddu	gp,gp,t9
+  14:	ffb10008 	sd	s1,8(sp)
+  18:	679c0000 	daddiu	gp,gp,0
+  1c:	df820000 	ld	v0,0(gp)
+  20:	ffb00000 	sd	s0,0(sp)
+  24:	dc590000 	ld	t9,0(v0)
+  28:	2402ffff 	li	v0,-1
+  2c:	13220009 	beq	t9,v0,54 <__do_global_ctors_aux+0x54>
+  30:	df900000 	ld	s0,0(gp)
+  34:	2411ffff 	li	s1,-1
+  38:	66100000 	daddiu	s0,s0,0
+  3c:	00000000 	nop
+  40:	0320f809 	jalr	t9
+  44:	6610fff8 	daddiu	s0,s0,-8
+  48:	de190000 	ld	t9,0(s0)
+  4c:	1731fffc 	bne	t9,s1,40 <__do_global_ctors_aux+0x40>
+  50:	00000000 	nop
+  54:	dfbf0018 	ld	ra,24(sp)
+  58:	dfbc0010 	ld	gp,16(sp)
+  5c:	dfb10008 	ld	s1,8(sp)
+  60:	dfb00000 	ld	s0,0(sp)
+  64:	03e00008 	jr	ra
+  68:	67bd0020 	daddiu	sp,sp,32
+  6c:	00000000 	nop
+
+Disassembly of section .init:
+
+0000000000000000 <.init>:
+   0:	04110001 	bal	8 <.init+0x8>
+   4:	00000000 	nop
+   8:	0380102d 	move	v0,gp
+   c:	3c1c0000 	lui	gp,0x0
+  10:	279c0000 	addiu	gp,gp,0
+  14:	039fe02d 	daddu	gp,gp,ra
+  18:	df990000 	ld	t9,0(gp)
+  1c:	0320f809 	jalr	t9
+  20:	00000000 	nop

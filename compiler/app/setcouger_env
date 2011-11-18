@@ -1,0 +1,4 @@
+export FPSDKROOT=/build/fpsdkroot_cougar
+export PATH=$FPSDKROOT/WR-4.0/gnu/wrlinux-4-v333/x86-linux2/bin:$PATH
+export CROSS_COMPILE=$FPSDKROOT/sysroots/mips/sysroot-wrlinux-4.0-NSN20-fp_octwnd-glibc_cgl/x86-linux2/mips-wrs-linux-gnu-mips64_octeon-glibc_cgl-
+

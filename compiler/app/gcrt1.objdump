@@ -1,0 +1,61 @@
+
+glibc/gcrt1.o:     file format elf64-tradbigmips
+
+
+Disassembly of section .text:
+
+0000000000000000 <__start>:
+   0:	03e0002d 	move	zero,ra
+   4:	04110001 	bal	c <__start+0xc>
+   8:	00000000 	nop
+   c:	0380c82d 	move	t9,gp
+  10:	3c1c0000 	lui	gp,0x0
+  14:	279c0000 	addiu	gp,gp,0
+  18:	039fe02d 	daddu	gp,gp,ra
+  1c:	0000f82d 	move	ra,zero
+  20:	df840000 	ld	a0,0(gp)
+  24:	dfa50000 	ld	a1,0(sp)
+  28:	67a60008 	daddiu	a2,sp,8
+  2c:	2401fff0 	li	at,-16
+  30:	03a1e824 	and	sp,sp,at
+  34:	df870000 	ld	a3,0(gp)
+  38:	df880000 	ld	a4,0(gp)
+  3c:	0040482d 	move	a5,v0
+  40:	03a0502d 	move	a6,sp
+  44:	df990000 	ld	t9,0(gp)
+  48:	0320f809 	jalr	t9
+  4c:	00000000 	nop
+
+0000000000000050 <hlt>:
+  50:	1000ffff 	b	50 <hlt>
+  54:	00000000 	nop
+	...
+
+0000000000000060 <__gmon_start__>:
+  60:	67bdfff0 	daddiu	sp,sp,-16
+  64:	ffbc0000 	sd	gp,0(sp)
+  68:	3c1c0000 	lui	gp,0x0
+  6c:	ffbf0008 	sd	ra,8(sp)
+  70:	0399e02d 	daddu	gp,gp,t9
+  74:	679c0000 	daddiu	gp,gp,0
+  78:	df820000 	ld	v0,0(gp)
+  7c:	8c430000 	lw	v1,0(v0)
+  80:	10600005 	beqz	v1,98 <__gmon_start__+0x38>
+  84:	dfbf0008 	ld	ra,8(sp)
+  88:	dfbc0000 	ld	gp,0(sp)
+  8c:	03e00008 	jr	ra
+  90:	67bd0010 	daddiu	sp,sp,16
+  94:	00000000 	nop
+  98:	df990000 	ld	t9,0(gp)
+  9c:	24030001 	li	v1,1
+  a0:	df840000 	ld	a0,0(gp)
+  a4:	df850000 	ld	a1,0(gp)
+  a8:	0320f809 	jalr	t9
+  ac:	ac430000 	sw	v1,0(v0)
+  b0:	df840000 	ld	a0,0(gp)
+  b4:	df990000 	ld	t9,0(gp)
+  b8:	dfbc0000 	ld	gp,0(sp)
+  bc:	dfbf0008 	ld	ra,8(sp)
+  c0:	03200008 	jr	t9
+  c4:	67bd0010 	daddiu	sp,sp,16
+	...

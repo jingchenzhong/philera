@@ -1,0 +1,29 @@
+
+glibc/crti.o:     file format elf64-tradbigmips
+
+
+Disassembly of section .init:
+
+0000000000000000 <_init>:
+   0:	67bdfff0 	daddiu	sp,sp,-16
+   4:	ffbc0000 	sd	gp,0(sp)
+   8:	3c1c0000 	lui	gp,0x0
+   c:	0399e02d 	daddu	gp,gp,t9
+  10:	679c0000 	daddiu	gp,gp,0
+  14:	df820000 	ld	v0,0(gp)
+  18:	10400005 	beqz	v0,30 <_init+0x30>
+  1c:	ffbf0008 	sd	ra,8(sp)
+  20:	df990000 	ld	t9,0(gp)
+  24:	0320f809 	jalr	t9
+  28:	00000000 	nop
+  2c:	00000000 	nop
+
+Disassembly of section .fini:
+
+0000000000000000 <_fini>:
+   0:	67bdfff0 	daddiu	sp,sp,-16
+   4:	ffbc0000 	sd	gp,0(sp)
+   8:	3c1c0000 	lui	gp,0x0
+   c:	ffbf0008 	sd	ra,8(sp)
+  10:	0399e02d 	daddu	gp,gp,t9
+  14:	679c0000 	daddiu	gp,gp,0

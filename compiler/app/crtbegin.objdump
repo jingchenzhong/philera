@@ -1,0 +1,93 @@
+
+gcc/crtbegin.o:     file format elf64-tradbigmips
+
+
+Disassembly of section .text:
+
+0000000000000000 <__do_global_dtors_aux>:
+   0:	67bdffd0 	daddiu	sp,sp,-48
+   4:	ffbc0020 	sd	gp,32(sp)
+   8:	3c1c0000 	lui	gp,0x0
+   c:	ffb30018 	sd	s3,24(sp)
+  10:	0399e02d 	daddu	gp,gp,t9
+  14:	ffbf0028 	sd	ra,40(sp)
+  18:	679c0000 	daddiu	gp,gp,0
+  1c:	df930000 	ld	s3,0(gp)
+  20:	ffb20010 	sd	s2,16(sp)
+  24:	92620000 	lbu	v0,0(s3)
+  28:	ffb10008 	sd	s1,8(sp)
+  2c:	14400018 	bnez	v0,90 <__do_global_dtors_aux+0x90>
+  30:	ffb00000 	sd	s0,0(sp)
+  34:	df920000 	ld	s2,0(gp)
+  38:	df910000 	ld	s1,0(gp)
+  3c:	df900000 	ld	s0,0(gp)
+  40:	66520000 	daddiu	s2,s2,0
+  44:	0232882f 	dsubu	s1,s1,s2
+  48:	de020000 	ld	v0,0(s0)
+  4c:	001188fb 	dsra	s1,s1,0x3
+  50:	6631ffff 	daddiu	s1,s1,-1
+  54:	0051182b 	sltu	v1,v0,s1
+  58:	1060000b 	beqz	v1,88 <__do_global_dtors_aux+0x88>
+  5c:	64420001 	daddiu	v0,v0,1
+  60:	fe020000 	sd	v0,0(s0)
+  64:	000210f8 	dsll	v0,v0,0x3
+  68:	0052102d 	daddu	v0,v0,s2
+  6c:	dc590000 	ld	t9,0(v0)
+  70:	0320f809 	jalr	t9
+  74:	00000000 	nop
+  78:	de020000 	ld	v0,0(s0)
+  7c:	0051182b 	sltu	v1,v0,s1
+  80:	1460fff7 	bnez	v1,60 <__do_global_dtors_aux+0x60>
+  84:	64420001 	daddiu	v0,v0,1
+  88:	24020001 	li	v0,1
+  8c:	a2620000 	sb	v0,0(s3)
+  90:	dfbf0028 	ld	ra,40(sp)
+  94:	dfbc0020 	ld	gp,32(sp)
+  98:	dfb30018 	ld	s3,24(sp)
+  9c:	dfb20010 	ld	s2,16(sp)
+  a0:	dfb10008 	ld	s1,8(sp)
+  a4:	dfb00000 	ld	s0,0(sp)
+  a8:	03e00008 	jr	ra
+  ac:	67bd0030 	daddiu	sp,sp,48
+
+00000000000000b0 <frame_dummy>:
+  b0:	3c030000 	lui	v1,0x0
+  b4:	0079182d 	daddu	v1,v1,t9
+  b8:	64630000 	daddiu	v1,v1,0
+  bc:	dc640000 	ld	a0,0(v1)
+  c0:	dc820000 	ld	v0,0(a0)
+  c4:	10400005 	beqz	v0,dc <frame_dummy+0x2c>
+  c8:	dc790000 	ld	t9,0(v1)
+  cc:	13200003 	beqz	t9,dc <frame_dummy+0x2c>
+  d0:	00000000 	nop
+  d4:	03200008 	jr	t9
+  d8:	64840000 	daddiu	a0,a0,0
+  dc:	03e00008 	jr	ra
+  e0:	00000000 	nop
+	...
+
+Disassembly of section .fini:
+
+0000000000000000 <.fini>:
+   0:	04110001 	bal	8 <.fini+0x8>
+   4:	00000000 	nop
+   8:	0380102d 	move	v0,gp
+   c:	3c1c0000 	lui	gp,0x0
+  10:	279c0000 	addiu	gp,gp,0
+  14:	039fe02d 	daddu	gp,gp,ra
+  18:	df990000 	ld	t9,0(gp)
+  1c:	0320f809 	jalr	t9
+  20:	00000000 	nop
+
+Disassembly of section .init:
+
+0000000000000000 <.init>:
+   0:	04110001 	bal	8 <.init+0x8>
+   4:	00000000 	nop
+   8:	0380102d 	move	v0,gp
+   c:	3c1c0000 	lui	gp,0x0
+  10:	279c0000 	addiu	gp,gp,0
+  14:	039fe02d 	daddu	gp,gp,ra
+  18:	df990000 	ld	t9,0(gp)
+  1c:	0320f809 	jalr	t9
+  20:	00000000 	nop

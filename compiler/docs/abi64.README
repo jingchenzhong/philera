@@ -274,6 +274,24 @@ __attribute__((weakref));
 调试信息：
 DWARF - Debug Arbitrary Record Format
 
+.MIPS.Options段：
+寄存器信息选项描述符：
+ODK_REGINFO取代.reginfo段。
+kind Elf64_Byte ODK_REGINFO
+size Elf64_Byte 40
+section Elf64_Section 0
+info Elf64_Word unused
+ri_gprmask Elf64_Word 使用的通用寄存器的掩码
+ri_pad Elf64_Word 填充位
+ri_cprmask[4] Elf64_Word 使用的协处理器寄存器的掩码
+ri_gp_value Elf64_Addr gp初始化
+如果这里没有寄存器信息描述符，gp初始化假设为0
+这个值的意义在于，对于任意SHT_MIPS_GPREL段，如果他的开始
+地址（被段的sh_addr提供）被指定为x(通常是0)，然后gp被假设为
+别初始化为他的重定位开始地址加上(ri_gp_value-x).
+任何R_MIPS_GPREL的初始加数-重定位数值将是正确的偏移，如果
+段没有相对于gp移动。
+
 
 
 .text 代码段 SHT_PROGBITS SHF_ALLOC+SHF_EXECINSTR
@@ -297,3 +315,4 @@ DWARF - Debug Arbitrary Record Format
 .fini 程序终结代码段
 
 自定义段名不能带., ELF可以拥有多个同名段
+

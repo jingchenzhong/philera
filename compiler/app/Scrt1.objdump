@@ -1,0 +1,32 @@
+
+glibc/Scrt1.o:     file format elf64-tradbigmips
+
+
+Disassembly of section .text:
+
+0000000000000000 <__start>:
+   0:	03e0002d 	move	zero,ra
+   4:	04110001 	bal	c <__start+0xc>
+   8:	00000000 	nop
+   c:	0380c82d 	move	t9,gp
+  10:	3c1c0000 	lui	gp,0x0
+  14:	279c0000 	addiu	gp,gp,0
+  18:	039fe02d 	daddu	gp,gp,ra
+  1c:	0000f82d 	move	ra,zero
+  20:	df840000 	ld	a0,0(gp)
+  24:	dfa50000 	ld	a1,0(sp)
+  28:	67a60008 	daddiu	a2,sp,8
+  2c:	2401fff0 	li	at,-16
+  30:	03a1e824 	and	sp,sp,at
+  34:	df870000 	ld	a3,0(gp)
+  38:	df880000 	ld	a4,0(gp)
+  3c:	0040482d 	move	a5,v0
+  40:	03a0502d 	move	a6,sp
+  44:	df990000 	ld	t9,0(gp)
+  48:	0320f809 	jalr	t9
+  4c:	00000000 	nop
+
+0000000000000050 <hlt>:
+  50:	1000ffff 	b	50 <hlt>
+  54:	00000000 	nop
+	...
