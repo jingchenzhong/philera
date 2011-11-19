@@ -327,12 +327,20 @@ int main(int argc, char **argv)
             offsetof(ELF64_MIPS_ODHR_T, data)+24);
 
     /* .dymanic */
-    ELF64_SHR_T *elf64_shr_dym_ptr = elf64_shr_ptr+2;
-    unsigned char *file_shr_dym_ptr = file_shr_ptr+2*sizeof(ELF64_SHR_T);
-    getb32(&word, file_shr_dym_ptr+
+    ELF64_SHR_T *elf64_shr_dyn_ptr = elf64_shr_ptr+2;
+    unsigned char *file_shr_dyn_ptr = file_shr_ptr+2*sizeof(ELF64_SHR_T);
+    getb32(&word, file_shr_dyn_ptr+
             offsetof(ELF64_SHR_T, sh_name));
     printf ("%s: \n", file_str_tab_ptr+word);
-    getoneshdr(elf64_shr_dym_ptr, file_shr_dym_ptr);
+    getoneshdr(elf64_shr_dyn_ptr, file_shr_dyn_ptr);
+
+    printf (".dyn:\n", elf64_shr_dyn_ptr->sh_offset);
+    ELF64_DYN_T *elf64_dyn_ptr = (ELF64_DYN_T*)calloc(1, sizeof(ELF64_DYN_T));
+    unsigned char *file_dyn_ptr = file_ptr+elf64_shr_dyn_ptr->sh_offset;
+    getb64(&(elf64_dyn_ptr->d_tag), file_dyn_ptr+
+            offsetof(ELF64_DYN_T, d_tag));
+    getb64(&(elf64_dyn_ptr->d_un.d_val), file_dyn_ptr+
+            offsetof(ELF64_DYN_T, d_un));
 
 
 __cleanup:
