@@ -2,3 +2,7 @@ gen_card.sh - generate valid card id
 
 test.sh - main entry
 auto_sub.sh - autosub votes 
+
+
+
+search_rpm.sh - search info by rpm name
