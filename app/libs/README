@@ -1,0 +1,3 @@
+static:  -static -pthread -lrt -ldl
+dynamic: -pthread -lrt -ldl
+half: -static-libgcc -L. -lpthread -lrt -ldl

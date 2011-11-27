@@ -1,0 +1,2 @@
+enable jobs and parallel-pkgbuilds:
+../SS_WRL4/WR/wrlinux-4/wrlinux/configure --enable-board=cav_octeon_cn56xx --enable-kernel=standard --enable-rootfs=glibc_small --enable-jobs=10 --enable-parallel-pkgbuilds=10
