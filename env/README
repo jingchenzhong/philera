@@ -21,3 +21,11 @@ yaourt -S scim
 blacklist pcspkr
 yaourt -S xpdf-simplified-chinese
 
+Arch Boot Process
+POST --> MBR(GRUB) --> /boot/kernel26.img --> initramfs --> /sbin/init -->
+/etc/inittab 启动级别3
+rc::sysinit:/etc/rc.sysinit
+rs:S1:wait:/etc/rc.single
+rm:2345:wait:/etc/rc.multi
+sh:06:wait:/etc/rc.shutdown
+su:S:wait:/sbin/sulogin
