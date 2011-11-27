@@ -1,1 +1,7 @@
 archlinux_config
+[archlinuxfr]
+Server = http://repo.archlinux.fr/i686
+
+pacman -Syu
+pacman -S yourt
+yaourt -Syua
