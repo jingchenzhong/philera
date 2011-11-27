@@ -1,0 +1,9 @@
+#isatapd isatap.sjtu.edu.cn
+#isatapd -d isatap.sjtu.enu.cn
+
+ip tunnel del is_sjtu
+ip tunnel add is_sjtu mode isatap remote 202.112.26.246 local "$1"
+ip link set is_sjtu up
+ip tunnel prl prl-default 202.112.26.246 dev is_sjtu
+ip -6 route add default via fe80::5efe:202.112.26.246 dev is_sjtu
+rdisc6 is_sjtu
