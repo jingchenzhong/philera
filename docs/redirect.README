@@ -1,0 +1,27 @@
+command > file standard output to file
+command >> file standard output append to file
+command 1 > file  ==> command > file
+command > file 2>&1 standard output and error to file
+command >> file 2>&1 standard output and error append to file
+command 2 > file standard error to file
+command 2 >> file standard error append to file
+
+command < file > file2 file as standard input, fil2 as standard output
+
+command < file file as standard input
+command << delimiter read from standard input until delimiter
+command <&m file descriptor m as standard input
+command >&m file standard output to descriptor m
+command <&- close standard input
+
+
+#!/bin/bash
+# file descriptor 4 to standard input, then stock.txt as standard input
+exec 4<&0 0<stock.txt
+read line1
+read line2
+exec 0<&4
+echo $line1
+echo $line2
+
+
