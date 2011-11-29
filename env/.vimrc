@@ -801,7 +801,11 @@ let Tlist_Exit_OnlyWindow=1
 "let Tlist_WinHeight = 215
 
 "Which tags files CTR-] will search
-set tags=~/db/tags
+if filereadable("./tags")
+  set tags=./tags
+else
+  set tags=~/db/tags
+endif
 
 "if has("win32")
 "set path=.,./../**,D:\Program\Vim\MinGW\include
