@@ -1,0 +1,10 @@
+cronetab:
+minutes<>hours<>day<>month<>week<>command
+
+30 21 * * * /apps/bin/cleanup.sh
+
+every day 21:30 run cleanup.sh
+
+
+at:
+/etc/rc.d/atd start
