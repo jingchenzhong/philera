@@ -1,5 +1,5 @@
-
-modify or create ~/.ssh/config
+client:
+1. modify or create ~/.ssh/config
 ~~~~~~
 Host server
     User wang
@@ -7,8 +7,14 @@ Host server
     Port 22
 ~~~~~~
 
-then copy id from remote server
-$> ssh-copy-id server
+2. create rsa key
+$> ssh-key -t rsa
+$> ls .ssh
+id_rsa id_rsa.pub
+
+3. copy id_rsa.pub to server as authorized_keys
+$> ssh server mkdir -p .ssh
+$> cat .ssh/id_rsa.pub | ssh server 'cat >> .ssh/authorized_keys'
 
 
 
