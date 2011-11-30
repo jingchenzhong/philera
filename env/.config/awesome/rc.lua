@@ -7,15 +7,38 @@ require("beautiful")
 -- Notification library
 require("naughty")
 
+-- {{{ Error handling
+-- Check if awesome encountered an error during startup and fell back to
+-- another config (This code will only ever execute for the fallback config)
+if awesome.startup_errors then
+    naughty.notify({ preset = naughty.config.presets.critical,
+                     title = "Oops, there were errors during startup!",
+                     text = awesome.startup_errors })
+end
+
+-- Handle runtime errors after startup
+do
+    local in_error = false
+    awesome.add_signal("debug::error", function (err)
+        -- Make sure we don't go into an endless error loop
+        if in_error then return end
+        in_error = true
+
+        naughty.notify({ preset = naughty.config.presets.critical,
+                         title = "Oops, an error happened!",
+                         text = err })
+        in_error = false
+    end)
+end
+-- }}}
+
 -- {{{ Variable definitions
 -- Themes define colours, icons, and wallpapers
 beautiful.init("/usr/share/awesome/themes/zenburn/theme.lua")
 
-
-
 -- This is used later as the default terminal and editor to run.
 terminal = "urxvt"
-browser = "opera"
+browser = "w3m"
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
 colorlight = "#4b7885"
@@ -51,11 +74,11 @@ layouts =
 tags = {}
 for s = 1, screen.count() do
     -- Each screen has its own tag table.
-    tags[s] = awful.tag({ "MAIN", "WWW", "IRC", "VNC", "offic", 6, 7, 8, 9 }, s, 
+    tags[s] = awful.tag({ "MAIN", "WWW", "IRC", "VNC", "OFFICE", 6, 7, 8, 9 }, s, 
 {
-    layouts[2], layouts[2], layouts[12], -- Tags: 1, 2, 3
-    layouts[5], layouts[6], layouts[12], -- 4, 5, 6
-    layouts[2], layouts[1], layouts[3], -- 7, 8, 9
+    layouts[11], layouts[5], layouts[12], -- Tags: MAIN, WWW, IRC
+    layouts[10], layouts[8], layouts[12], -- VNC, OFFICE, 6
+    layouts[12], layouts[12], layouts[12], -- 7, 8, 9
 })
 end
 -- }}}
@@ -64,7 +87,7 @@ end
 -- Create a laucher widget and a main menu
 myawesomemenu = {
    { "manual", terminal .. " -e man awesome" },
-   { "edit config", editor_cmd .. " " .. awful.util.getdir("config") .. "/rc.lua" },
+   { "edit config", editor_cmd .. " " .. awesome.conffile },
    { "restart", awesome.restart },
    { "quit", awesome.quit }
 }
