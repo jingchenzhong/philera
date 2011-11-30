@@ -1,0 +1,16 @@
+
+modify or create ~/.ssh/config
+~~~~~~
+Host server
+    User wang
+    Hostname www.server.org
+    Port 22
+~~~~~~
+
+then copy id from remote server
+$> ssh-copy-id server
+
+
+
+after done ssh without password
+$> ssh server
