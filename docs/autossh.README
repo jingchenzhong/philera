@@ -5,6 +5,7 @@ Host server
     User wang
     Hostname www.server.org
     Port 22
+    IdentityFile ~/.ssh/id_rsa
 ~~~~~~
 
 2. create rsa key

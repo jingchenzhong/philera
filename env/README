@@ -15,11 +15,13 @@ export LC_ALL="zh_CN.UTF-8"
 export LC_CTYPE="zh_CN.UTF-8"
 中文字体
 yaourt -S wqy-zenhei wqy-bitmapfont wqy-microhei wqy-microhei-lite ttf-arphic-ukai ttf-arphic-uming ttf-fireflysung ttf-ms-fonts
-yaourt -S scim
+yaourt -S fcitx rxvt-unicode zhcon  
 禁止beep
-/etc/modprobe.d/nobeep.conf
+/etc/modprobe.d/modprobe.conf
 blacklist pcspkr
 yaourt -S xpdf-simplified-chinese
+
+yaourt -S mplayer2 codecs
 
 Arch Boot Process
 POST --> MBR(GRUB) --> /boot/kernel26.img --> initramfs --> /sbin/init -->
