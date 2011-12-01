@@ -21,30 +21,19 @@ then
     exit $errcode
 fi
 
-# download video from 
+# download video from real site 
 errcode=1
 while (( $errcode != 0 ))
 do
-   aria2c -d /tmp -c -i /tmp/url.log
+   aria2c -d . -c -i /tmp/url.log
    errcode=$?
 done
 
 #rm -rvf /tmp/url.log
 
-# merge video
+# generate playlist
 date=`date +%Y%m%d%H%M%S`
-rm -rvf all_$date.flv
-files=`sed -n 's/^.*fileid\/\([^ ?=]*\).*$/\1.flv/p' /tmp/url.log`
-for f in $files
-do
-    f=/tmp/$f
-    size=`du -sb $f | sed -n '$s/^\([0-9^ ]*\).*$/\1/p'`
-    cat $f | pv -pa -s $size >> all_$date.flv 
-    if (( $? != 0 ))
-    then
-        exit -2
-    fi
-done
+sed -n 's/^.*fileid\/\([^ ?=]*\).*$/\1.flv/p' /tmp/url.log > ./all_$date.playlist
 
 exit 0
 
