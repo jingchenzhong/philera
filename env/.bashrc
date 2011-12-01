@@ -72,6 +72,7 @@ EDITOR=vim
 #http_proxy="http://10.144.1.10:8080"
 PAGER=less
 VISUAL=vim
+CDPATH=:..:~:~/repos
 
 complete -cf sudo
 complete -cf man
