@@ -22,6 +22,7 @@ blacklist pcspkr
 yaourt -S xpdf-simplified-chinese
 
 yaourt -S mplayer2 codecs
+在vmware下mplayer只支持vo=x11,不支持xv特性
 
 Arch Boot Process
 POST --> MBR(GRUB) --> /boot/kernel26.img --> initramfs --> /sbin/init -->

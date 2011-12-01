@@ -1,0 +1,12 @@
+# Write your default config options here!
+[default]
+# use X11 for video output
+#vo=xv
+vo=x11
+#use also for audio output
+ao=alsa
+#prefer using six channels audio
+channels=6
+
+
+
