@@ -1,0 +1,4 @@
+obj/cvmx-log-arc.o:  \
+ /home/phil/repos/mcrnc/CAVIUMSDK_1.7.2-244-FP1/OCTEON-SDK/executive/cvmx-log-arc.S \
+  /home/phil/repos/mcrnc/CAVIUMSDK_1.7.2-244-FP1/OCTEON-SDK/tools-gcc-4.1/bin/../lib/gcc/mipsisa64-octeon-elf/4.1.2/../../../../mipsisa64-octeon-elf/include/machine/asm.h \
+  /home/phil/repos/mcrnc/CAVIUMSDK_1.7.2-244-FP1/OCTEON-SDK/tools-gcc-4.1/bin/../lib/gcc/mipsisa64-octeon-elf/4.1.2/../../../../mipsisa64-octeon-elf/include/machine/regdef.h

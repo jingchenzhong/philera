@@ -1,0 +1,147 @@
+1. 工作模式：
+TEXT --> sed pattern space --> output
+
+2. 正则表达式括在斜杠间：
+sed -n '/love/p' filename
+sed -n 's/love/like/' filename
+替换斜杠为c
+sed -n '\clovecp' filename
+如果斜杠本身作为表达式一部分，必须加上转义反斜杠
+
+3. 定位：
+地址形式可以是数字，正则表达式，或二者结合
+sed -n '1,3/[Jj]ohn/p' datafile
+
+4. 命令：
+a\ 在当前行后添加一行或多行
+c\ 用新文本替代当前行中文本
+d 删除行
+i\ 在当前行前插入文本
+h 把模式空间里内容复制到暂存缓冲区
+H 追加
+g 取出暂存缓冲区内容覆盖原有内容
+G 取出并追加到原有内容后面
+l 列出非打印字符
+p 打印行
+n 读入下一行
+q 结束或退出
+r 从文件中读取输入行
+! 对有选行以外的所有行应用命令
+s 用一个字符串替换另一个
+
+替换标志：
+g 在行内进行全局替换
+p 打印行
+w 将行写入文件
+x 交换暂存缓冲区与模式空间内容
+y 将字符转换为另一个字符 - 不能对正则表达式使用y命令
+
+
+5. 选项：
+-e 允许多项编辑
+-f 制定sed脚本文件名
+-n 取消默认输出
+
+如果使用多条命令，或者在某个地址范围内嵌套地址，需要使用花括号缉拿杠命令括起来，每行之写一个命令，
+或者使用分号分隔一行中的多条命令。
+
+6. sed正则表达式元字符：
+^ 行首 /^love/
+$ 行尾 /love$/
+. 匹配除换行符以外的单个字符 /l..e/
+* 匹配零个或多个前导字符 / *love/
+[] 匹配指定字符组内的任意一个字符 /[Ll]ove/ 
+[^] 匹配不在指定字符组内的任一字符 /[^A-KM-Z]ove/
+\(...\) 保存已匹配的字符 s/\(love\)able/\1er/
+& 保存查找串一边在替换串 s/love/**&**/
+\< 词首定位符 /\<love/
+\> 词尾定位符 /love\>/
+x\{m\} 连续m个x
+x\{m,\} 至少m个x
+x\{m,n\} 至少m个，但不超过n个x
+
+
+7. sed范例：
+a. 打印： p命令
+sed -n '/north/p' datafile
+显示匹配north行
+b. 删除命令: d命令
+sed '/^$/d' datafile
+删除空白行，显示其余行
+c. 替换：s命令
+sed 's/[0-9][0-9]$/&.5/' datafile
+sed 's/Hemenway/Jones/gp' datafile
+sed 's/\(Mar\)got/\1anne/p' datafile
+sed 's#3#88#g' datafile
+d. 指定行范围：,逗号 
+范围是闭合的-包含开始行和结束行
+sed -n '/west/,/east/p' datafile
+e. 多重编辑：e命令
+sed -e '1,3d' -e 's/Hememway/Jones/' datafile
+f. 读文件：r命令
+sed '/Suan/r newfile' datafile
+g. 写文件：w命令
+sed -n '/north/w newfile' datafile
+h. 追加：a命令
+sed '/^north /a\
+--->THE NORTH<---' datafile
+i. 插入：i命令
+sed '/eastern/i\
+NEW REGION\
+------------' datafile
+在当前行的前面
+j. 修改：c命令
+sed '/eastern/c\
+THE EASTERN CLOSED' datafile
+k. 获取下一行：n命令
+sed '/eastern/{ n; s/AM/Archine/; }' datafile
+l. 转换： y命令
+sed '1,3y/abcde/ABCDE/' datafile
+类似于tr命令，字符按照一对一方式从左到右进行替换
+m. 退出：q命令
+sed '5q' datafile
+打印完第5行之后，q命令让sed退出
+sed '/Lewis/{ s/Lewis/Joseph/;q; }' datafile
+在某行匹配到Lewis时，s表示先用Joseph替换Lewis，然后退出
+n. 暂存和取用， h命令和g命令 
+模式缓冲区，暂存缓冲区
+sed -e '/northest/h' -e '$G' datafile
+sed -e '/WE/{h; d;}' -e '/CT/{G; }' datafile
+包含WE的行都先存在暂存缓冲区，然后删除该行，
+然后查找CT的行，并取出暂存行追加在当前行后面
+o. 暂存和互换：h命令和x命令
+sed -e '/Patricia/h' -e '/Margot/x' datafile
+x命令将暂存缓冲区的内容和模式空间内的当前行互换。
+找到包含Patricia行，保存在暂存缓冲区，然后，
+找到Margot行时，将模式空间中的内容与暂存缓冲区互换
+
+6. sed脚本：
+# My first sed script
+/Lewis/a\
+    Lewis is TOP
+
+/Margot/c\
+        RETIRED
+$d
+
+7. 回顾：
+sed -n '/sentimetable/p' filex
+sed '1,3d' file > newfile
+sed '/[Dd]aniel/d' filex
+sed -n '15,20/p' filex
+sed '1,10s/Montana/MT/g' filex
+sed '/March/!d' filex
+sed '/report/s/5/8' filex
+sed 's/....//' filex
+sed 's/....$//' filex
+sed '/east/,/west/s/North/South/' filex
+sed -n '/Time off/w timefile' filex
+sed 's/\([Oo]occur\)ence/\1rence/' file
+sed -n 'l' file # 打印所有已\nn显示非打印字符
+
+
+# remove html tag
+sed -n 's/<[^<>]*>//gp' html
+# remove empty line
+sed '/^$/d' file
+

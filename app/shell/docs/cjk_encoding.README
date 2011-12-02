@@ -9,3 +9,7 @@ VIM:
 termencoding=utf-8
 encoding=utf-8
 
+xinitrc:
+export LC_ALL="zh_CN.UTF-8" 
+for fcitx
+
