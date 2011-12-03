@@ -1,0 +1,15 @@
+$HOME/.mplayer/config
+vo=xv
+#vo=gl
+#vo=x11
+ao=alsa
+#ao=oss
+
+config可以指定mplayer的默认视频输出和音频输出，
+但是默认并不是最好的，可能显卡驱动,声卡驱动不支持
+
+如果mplayer出现黑屏，可以使用x11或gl
+
+
+
+

@@ -32,3 +32,5 @@ rs:S1:wait:/etc/rc.single
 rm:2345:wait:/etc/rc.multi
 sh:06:wait:/etc/rc.shutdown
 su:S:wait:/sbin/sulogin
+
+
