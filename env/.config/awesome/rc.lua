@@ -77,8 +77,8 @@ for s = 1, screen.count() do
     tags[s] = awful.tag({ "MAIN", "WWW", "IRC", "VNC", "OFFICE", 6, 7, 8, 9 }, s, 
 {
     layouts[11], layouts[5], layouts[12], -- Tags: MAIN, WWW, IRC
-    layouts[10], layouts[8], layouts[12], -- VNC, OFFICE, 6
-    layouts[12], layouts[12], layouts[12], -- 7, 8, 9
+    layouts[10], layouts[8], layouts[5], -- VNC, OFFICE, 6
+    layouts[5], layouts[5], layouts[12], -- 7, 8, 9
 })
 end
 -- }}}
