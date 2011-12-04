@@ -11,7 +11,7 @@ PS1='\[\e[0;32m\]\u\[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[0;31m\]\$ \[\e[m\]\[\e[0;
 
 # modified commands
 alias diff='colordiff'
-export GREP_COLOR="1:33"
+export GREP_COLOR="1;32"
 alias grep='grep --color=auto'
 alias more='less'
 alias df='df -h'
@@ -73,6 +73,12 @@ EDITOR=vim
 PAGER=less
 VISUAL=vim
 CDPATH=:.:..:~:~/repos
+
+
+# erase dup history
+export HISTCONTROL=erasedups
+# ignore command with space
+export HISTCONTROL=ignorespace
 
 complete -cf sudo
 complete -cf man

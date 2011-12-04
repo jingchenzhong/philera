@@ -5,3 +5,25 @@ find `pwd` -type f -name "*.cpp" -print -o \
     -type f -name "*.[sScChH]" -print > file.list
 cscope -bkq -i file.list
 ctags --c++-kinds=+p --fields=+iaS --extra=+q -L file.list
+
+重新编辑
+:e!
+打开以光标所在word为名字的文件gf
+
+cw删除一个单词并进入插入模式
+R不停的替换
+0行首
+K打开光标所在word的man手册
+
+u撤销，ctrl+r恢复
+H 移动光标到屏幕首行
+M 移动光标到屏幕中间行
+L 移动光标到屏幕末行
+
+加密：
+vim -x <filename>
+去除加密
+:X
+
+vi +/pattern file 打开文件并到匹配位置
+
