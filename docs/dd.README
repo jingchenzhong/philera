@@ -1,0 +1,44 @@
+dd转换和复制一个文件
+'if=file' 从文件中读取而不是标准输入
+'of=file' 写入一个文件，而不是标准输出,除非'conv=notrunc'给定，dd截取file到0
+'ibs=bytes' 设置输入块大小为bytes. dd读bytes每块。默认512字节
+'obs=bytes' 设置输出块大小为bytes, dd写bytes每块。默认512字节
+'bs=bytes' 输入和输出块大小bytes, 如果没有数据传输conv选项被设置，它一读就把输入复制到输出，即使它比块大小小
+'cbs=bytes' 设置转换块大小为bytes，当转换可变长度记录到固定长度(conv=block)或相反(conv=unblock),使用bytes作为固定记录长度
+'skip=blocks' 跳过多少块输入块
+'seek=blocks' 跳过多少块输出块
+'count=blocks' 复制多少块输入块
+'conv=conversion[,conversion]...' 转换公式：
+'ascii' 转换EBCDIC到ASCII, 使用POSIX指定的转换表，1:1翻译
+'ebcdic' 转换ASCII到EBCDIC
+'ibm' 转换ASCII到代替EBCDIC
+'block' 对于输入的每一行，输出'cbs'字节，代替输入新行带空格和填充空格
+'unblock' 移除所有拖尾空间'cbs'大小输入块，附在新行
+'lcase' 改变大写字符到小写
+'ucase' 改变小写到大写字符
+'swab' 交换输入字节的每对，奇数读，最后字节简单复制
+'sync' 填充每个输入块‘ibs’带0字节
+'excl' 如果输出文件以及存在就失败
+'nocreat' 不创建输出文件
+'notrunc' 不截断输出文件
+'noerror' 读错误后继续
+'fdatasync' 在完成之前同步输出数据
+'fsync' 完成之间同步数据和元数据
+'iflag=flag[,flag]...'
+'oflag=flag[,flag]...'
+'append'
+'cio'
+'direct'
+'directory'
+'dsync'
+'sync'
+'nocache'
+'nonblock'
+'noatime'
+'noctty'
+'nofollow'
+'nolinks'
+'binary'
+'text'
+'fullblock'
+

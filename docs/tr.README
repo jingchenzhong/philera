@@ -1,0 +1,39 @@
+tr SET1 SET2 凡是SET1中的字符，都会被替换为SET2中相应位置上的字符
+
+-c SET1反码
+-d 删除SET1中的字符
+-s 如果发现有连续的SET1里的字符，就把他们缩减为1个
+-t 截取SET1到SET2的长度
+
+\NNN
+\\
+\a
+\b
+\f
+\n
+\r
+\t
+\v
+CHAR1-CHAR2
+[CHAR*] SET2重复指定的字符CHAR到与SET1相同长度为止
+[CHAR*REPEAT] 将CHAR重复REPEAT次
+[:alnum:]
+[:alpha:]
+[:blank:]
+[:cntrl:]
+[:digit:]
+[:graph:]
+[:lower:]
+[:print:]
+[:punct:]
+[:space:]
+[:upper:]
+[:xdigit:]
+[=CHAR=] 等于CHAR的所有字符, 有些特殊字符
+
+tr -d '[=-=]abM' 
+
+SET1 > SET2
+SET1多出来的字符都会和SET2最后一个字符对应
+SET1 < SET2
+SET2中多余部分被抛弃
