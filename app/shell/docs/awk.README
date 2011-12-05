@@ -1,0 +1,196 @@
+awk指令是由模式，操作组合构成
+awk 'pattern {action}' filename
+
+关系表达式：
+<
+<=
+==
+!=
+>=
+>
+~  与正则表达式匹配 x ~ /y/
+!~ 与正则表达式不匹配 x !~ /y/
+
+条件表达式：
+条件表达式1 ? 表达式2 : 表达式3
+awk '{max=($1 > $2) ? $1 : $2; print max}' filename
+
+算术表达式：
++
+-
+*
+/
+% 模
+^ 幂
+
+逻辑操作符和复合模式：
+&&
+||
+!
+
+范围模式：
+awk '/Tom/,/Suzanne/' filename
+
+变量：
+数值变量和字符串变量,未初始化的变量的值是0或者"", 取决于使用时的上下文
+所有由split函数创建的字段或数组元素都被视为字符串
+
+命令行上的用户自定义变量：
+awk -F: -f awkscript month=4 year=2004 filename 
+如果filename在变量之前，那么这些变量不能在BEGIN语句中使用
+字段变量可以通过赋值来创建
+awk ' $4 == "CA" { $4 = "California"; print}' filename
+
+内置变量：
+ARGC 命令行参数的数目
+ARGIND 命令行当前文件在ARGV内索引
+ARGV 命令行参数构成的数组
+CONVFMT 数字转换格式
+ENVIRON 包含当前shell环境变量的数组
+ERRNO 当使用getline函数读操作或使用close函数时，错误
+FILEDWIDTHS 分隔固定宽度列表
+FILENAME 当前文件名
+FNR 当前输入文件的记录数
+FS 输入字段分隔符
+IGNORECASE 在正则表达式和字符串匹配时不区分大小写
+NF 当前记录中字段数
+NR 目前的记录数
+OFMT 数字的输出格式
+OFS 输出字段分隔符
+ORS 输出记录分隔符
+RLENGTH match函数匹配到的字符串长度
+RS 输入记录分隔符
+RSTART match函数匹配到字符串的偏移值
+RT 记录终止符
+SUBSEP 数组下标分隔符
+
+BEGIN模式：
+必须在对输入文件进行处理前先执行这个操作块。
+
+END模式：
+在处理完所有输入行之后执行这个操作块
+
+输出重定向：
+目标文件必须使用双引号，一旦文件被打开，就会保持打开直到显示关闭或awk终止，此后print语句输出
+追加到文件尾部
+awk '$4 >= 70 {print $1, $2 > "passing_file" }' filename
+
+输入重定向:
+getline 从标准输入，管道或文件读取输入。
+awk 'BEGIN{ "date" | getline d; split(d, mon); print d} filename
+awk 'BEGIN{while("ls"|getline) print}'
+awk 'BEGIN{printf "What is your name?";getline name < "/dev/tty"} $1 ~ name {print "Found" name "one line", NR "."} END{print "See you, " name "."}' filename
+awk 'BEGIN{while (getline < "/etc/passwd" > 0)lc++; print lc}' file
+
+管道：
+如果awk程序中打开了管道，必须先关闭它才能打开另外一个管道。
+awk '{print $1, $2 | "sort -r +1 -2 +0 -1 "} END{close("sort -r +1 -2 +0 -1")}' names
+
+system函数：执行系统命令
+system ("cat" $1)
+
+条件语句：
+if (表达式) {
+    语句; 语句;...
+} else if (表达式) {
+    语句; 语句;...
+} else {
+    语句; 语句;...
+}
+awk '{if ($6 > 50) print $1 "Too Hight"}' filename
+
+循环：
+awk '{i = 1; while (i <= NF) {print NF, $i, i++}}' filename
+awk '{for(i=1; i<=NF;i++)print NF,$i}' filename
+break, continue语句
+
+程序控制语句：
+next从输入文件中取出下一行输入。然后从awk脚本的顶部重新开始执行
+{ if ($1 ~ /Peter/){next} else {print} }
+exit语句用于终止awk程序,但不能跳过END语句
+
+数组：关联数组associative arrarys
+因为他的下标可以是数字，也可以时字符串
+下标称为键key, 并且与对应的数组元素的值相关联。数组元素不是顺序存储的.
+删除重复行: awk '{if(!array[$0]++) print}' filename
+
+{
+for (item in arrayname) {
+    print arrayname[item]
+}
+}
+awk '/^Tome/{name[NR]=$1}; \
+END{for(i in name){print name[i]}}' db
+
+split(字符串，数组，字段分隔符）
+split(字符串，数组)
+可指定字段分隔符，也可是FS当前值
+delete删除数组元素
+
+多维数组：
+把多个下标串成字符串，下标之间用SUBSEP的值分隔。
+{nf=NF \
+for (x=1; x<=NF; x++){ \
+matrix[NR,x]=$x \
+} \
+}
+
+处理命令行参数：
+ARGV
+ARGC
+
+BEGIN{
+for (i = 0; i < ARGC; i++ ) {
+printf ("argv[%d] is %s\n", i, ARGV[i])
+}
+}
+
+awk内置函数：
+sub (正则表达式，替换串）
+sub (正则表达式，替换串，目标串)
+index (字符串，子串）
+length (字符串）
+substr (字符串，起始位置，子串长度）
+match (字符串，正则表达式)
+split (字符串，数组，字段分隔符)
+
+内置算术函数：
+atan2(x,y)
+cos(x)
+exp(x)
+int(x)
+log(x)
+rand()
+sin(x)
+sqrt(x)
+srand(x)
+
+用户自定义函数：
+function 函数名 (参数，参数，...) {
+   语句
+   return 表达式
+}
+
+杂项：
+固定字段：
+空字段
+substr()
+带$,逗号，或其它字符的数字：
+gsub()
+
+多行记录：
+BEGIN{RS=""; FS="\n", ORS="\n\n"}
+
+内置函数：
+gsub();
+indext();
+match();
+sprintf();
+systime();
+strftime();
+toupper();
+tolower()
+
+
+
+
