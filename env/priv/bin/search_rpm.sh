@@ -10,8 +10,8 @@ submit=Search+...&system=&arch=1"
 #export http_proxy=$PROXY
 curl -s $URI > /tmp/tmp.html
 
-sed -n '37,$s/<[^<>]*>/\n/gp' /tmp/tmp.html 
+sed -n '37,/Generated/s/<[^<>]*>/\n/gp' /tmp/tmp.html | sed '/^$/d' 
 
-#rm tmp.html
+rm /tmp/tmp.html
 
 
