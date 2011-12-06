@@ -1,0 +1,11 @@
+tac复制每个文件（'-'是标准输入），或者如果什么也没有给定就是标准输入，反转记录（缺省以行为单位）。
+
+tac [option]... [file]...
+'-b' '--before' 分隔符被附加在记录开始
+'-r' '--regex' 将指定的分隔字符作为正则表达式, 因为tac读取文件以二进制模式，在MSDOS/Windows下结束符CR/LF,
+Unix下是LF
+'-s separator' '--separator=separator' 使用separator作为记录分隔符，而不是新行
+
+#
+tac -r -s '$' dd
+

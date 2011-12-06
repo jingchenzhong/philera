@@ -1,0 +1,9 @@
+填充和合并行
+fmt [option]... [file]...
+
+'-c' '--crown-margin' 
+'-t' '--tagged-paragraph'
+'-s' '--split-only'
+'-u' '--uniform-spacing'
+'-width' '-w width' '--width=width'
+'-p prefix' '--prefix=prefix'

@@ -1,1 +1,7 @@
-base64编解码
+转换数据为可打印数据
+base64 [option]... [file]
+base64 --decode [option]... [file]
+
+'-w cols' '--wrap=cols'在编码中，在cols字符后回行
+'-d' '--decode' 
+'-i' '--ignore-garbage' 在解码时新行总是被接受

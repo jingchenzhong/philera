@@ -1,0 +1,28 @@
+写每个文件('-'指标准输入),或不给参数则为标准输入，到标准输出，带行号
+nl [option]... [file]...
+nl将他的输入分解为逻辑页，行号被重置为1在每个逻辑页顶。nl将所有的输入文件作为一个文档对待。
+一个逻辑页包含三个部分：header, body, footer, 任何一个段都可以空
+逻辑页段开始需要界定字符
+'\:\:\:' 头开始
+'\:\:' 体开始
+'\:' 脚注开始
+
+'-b style' '--body-numbering=style'
+'a' 标号所有行
+'t' 只标号非空白行
+'n' 不标号
+'p bre'只标号匹配正则表达式bre的行
+
+'-d cd' '--section-delimiter=cd' 设置段分隔字符为cd,缺省'\:'
+'-f style' '--footer-numbering=style'
+'-h style' '--header-numbering=style'
+'-i number' '--line-increment=number'
+'-I number' '--join-blank-lins=number' 
+'-n format' '--number-format=format' 
+'ln' 左对齐
+'rn' 右对齐
+'rz' 右对齐，补0
+'p' '--no-renumber'不重置序号
+'-s string' '--number-separator=string' 分隔行号和内容的字符，默认TAB
+'-v number' '--starting-line-number=number' 设置每个逻辑页的初始行号
+'-w number' '--number-width=number'序号字符宽度

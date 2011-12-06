@@ -1,0 +1,11 @@
+标明页码和行
+pr [option]... [file]...
+
+'+first_page[:last_page]'
+'--pages=first_page[:last_page]'
+'-column' '--columns=column'
+'-a' '--across'
+'-c' '--show-control-chars'
+'-d' '--double-space'
+'-D format' '--date-format=format'
+'-

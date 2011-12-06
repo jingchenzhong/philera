@@ -1,4 +1,5 @@
-cat 复制每个文件到标准输出
+cat 复制每个文件 ('-'标准输入)或者标准输入， 到标准输出
+cat [option] [file]...
 -A 输出全部
 -v 显示控制字符
 -u 忽略
@@ -8,7 +9,21 @@ cat 复制每个文件到标准输出
 -n 显示行号
 -E 显示结束符$
 -e 等于-vE
--b 所有不空白行的序号
+-b 显示所有不空白行的序号
 
-tac 复制每个文件，反序
--b 
+# 输出f内容，然后是标准输入(ls的输出），然后是g内容
+ls | cat f - g
+
+# 复制输入到输出
+cat
+
+从键盘中创建新文件:
+cat > filename << EOF
+合并文件：
+cat file1 file2 > fileall
+清空文件：
+cat /dev/null > fileall
+或者fileall
+
+
+

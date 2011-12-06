@@ -1,0 +1,44 @@
+输出不同表现从每个文件
+od [option]... [file]...
+od [-abcdfilosx]... [file] [[+]offset[.][b]]
+od [option]... --traditional [file] [[+]offset[.][b] [[+]label[.][b]]]
+
+'-A radix' '--address-radix=radix' 
+'d' 十进制
+'o' 八进制
+'x' 十六进制
+'n' 没有
+
+'-j bytes' '--skip-bytes=bytes' 跳过多少字节
+'b' => 512
+'KB' => 1000
+'K' => 1024
+'MB' => 1000*1000
+'M' => 1024*1024
+'GB' => 1000*1000*1000
+'G' => 1024*1024*1024
+
+'-N bytes' '--read-bytes=bytes'
+'-S bytes' '--strings[=bytes]'
+'-t type' '--format=type'
+'a' 命名字符
+'c' ASCII字符
+'d' 有符号十进制
+'f' 浮点
+'o' 八进制
+'u' 无符号十进制
+'x' 十六进制
+'-v' '--output-duplicates' 
+'-w[n]' '--width[=n]' 
+'-a'
+'-b'
+'-c'
+'-d'
+'-f'
+'-i'
+'-I'
+'-o'
+'-s'
+'-x'
+'--traditional'
+
