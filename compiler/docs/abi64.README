@@ -198,6 +198,7 @@ other SHN_UNDEF 0
 对于每个需要重定位的代码段或数据段，都会有一个相应的重定位表
 sh_link表示符号表的下标，sh_info表示作用于哪个段
 比如.text段下标是1, 那么.rel.text的sh_info就是1
+重定位入口的偏移，重定位入口的类型和符号
 
 字符串表： .strtab
 段表字符串表： .shstrtab
@@ -315,4 +316,5 @@ ri_gp_value Elf64_Addr gp初始化
 .fini 程序终结代码段
 
 自定义段名不能带., ELF可以拥有多个同名段
+
 

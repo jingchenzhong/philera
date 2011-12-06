@@ -1,3 +1,15 @@
+编译过程：
+hello.c
+            propressing (cpp) -> preprocessed (hello.i) -> compilation (gcc) -> assembly (hello.s)
+stdio.h
+--> assembly (as) --> obj files (hello.o) 
+                                             --> Linking (ld) --> executable (a.out)
+                      static library libc.a
+
+source code -> scanner -> Tokens -> Parser -> Syntax Tree -> semantic analyzer -> commented syntax tree
+-> source code optimizer -> intermediate representation -> code generator -> target code -> code optimizer
+-> final target code
+
 自定义段：
 __attribute__((section("FOO"))) int global=42;
 __attribute__((section("BAR"))) void foo()
@@ -39,3 +51,25 @@ crtbegin.o: __do_global_dtors_aux, frame_dummy, .fini .init
 crtend.o: __do_global_ctors_aux, .init
 
 ld crt1.o crti.o [user_objs] [system_libraries] crtn.o
+
+
+
+弱符号和弱引用：库中定义的弱符号可以被用户定义的强符号所覆盖，从而使程序
+使用自定义版别的库函数，或者程序可以对某些扩展功能模块的应用定义为弱引用，
+当我们将扩展模块与程序链接在一起时，功能模块就可以正常使用。如果去掉某些功能，
+那么程序可以正常链接。
+
+#include <stdio.h>
+#include <pthread.h>
+int pthread_create(pthread_t *, 
+        const pthread_attr_t*,
+        void * (*) (void *),
+        void *) __attribute__ ((weak));
+int main ()
+{
+    if (pthread_create) {
+        printf ("This is multi-thread version\n");
+    } else {
+        printf ("This is single-thread version\n");
+    }
+}
