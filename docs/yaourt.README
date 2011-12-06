@@ -1,0 +1,27 @@
+YetAnOtherUserRepositorTool - Yaourt
+pacman -S base-devel
+export http_proxy=http://proxy.com:port
+visudo:
+Defaults evn_keep += "http_proxy"
+
+安装包：
+yaourt <package name> 
+更新系统：
+yaourt -Syua
+查找，并安装：
+yaourt <search pattern>
+同步数据库，升级包，搜索AUR和devel(所有基于cvs, svn, git, gzr...的包）:
+yaourt -Syu --devel --aur
+从源码编译包：
+yaourt -Sb <package name>
+检查，编辑，合并或移除*.pac*文件, 例如/etc/rc.conf.pacnew：
+yaourt -C
+获取一个PKGBUILD(支持分割包)：
+yaourt -G <package name>
+编译和输出包，他的源码在目录dir里：
+yaourt -Sb --export <dir> <package name>
+备份数据库：
+yaourt -B
+查询备份文件：
+yaourt -Q --backupfile <file>
+
