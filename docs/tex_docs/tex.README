@@ -10,3 +10,11 @@ dvipdf test.dvi test.pdf
 关于字体，可以使用fc-list查看当前系统中安装的字体
 fc-list :lang=zh-cn
 
+
+tex可理解为一个标准，如C/C++标准，定义基本API；
+LaTeX是对tex的扩展，封装了一些功能，以便于使用，就像Boost/ACE库之于C++一样；ConTeXt是TeX的另外一个封装库，级别跟LaTeX一样；最早的tex扩展应该是plain tex，现在仍然有很多人在使用；
+pdftex, xetex可以看成是tex的编译器，就像gcc, icc之于C/C++；luatex是现在比较新的tex`编译器'，而knuth tex是最早的tex编译器；当然不同的编译器可能有不同的扩展，如xetex对unicode的支持，luatex对内嵌lua脚本的扩展等等。
+winedt是一个tex编辑器，跟notepad，vim，emacs一样，编辑器而已，只是对latex文件的语法、语义支持强一些；
+miktex, texlive就像Visual C++，C++ Builder一样，提供了写tex/latex/context文档所需要的基本的和必要的工具，如tex编译器和常用的宏包，可以理解为集成开发环境；
+ctex是基于miktex的二次开发，加入了一些中文配置（如CJK/CCT），方便了国内用户使用。如果非要打比方的话，可以理解为“支持中文的linux”。
+
