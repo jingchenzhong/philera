@@ -1,0 +1,8 @@
+把输入按随机顺序输出
+
+-e --echo 每个参数视为输入行
+-i --input-range=LO-LI 将LO到HI的每个数字视为输入行
+-n --head-count=count 最多输出自定行
+-o --output=file 将结果输出到指定文件
+--random-source=file 
+-z --zero-teminated 以0结束行

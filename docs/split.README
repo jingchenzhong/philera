@@ -1,0 +1,24 @@
+分隔文件为多片
+split [option] [input[prefix]]
+默认split将1000行输入作为每个输出文件
+'-l lines'
+'--lines=lines' 每个输出文件多少行
+'-b size'
+'--bytes=size' 每个输出文件多少字节
+'-C size'
+'--line-bytes=size' 每个输出文件最大行字节
+'--filter=command' 分隔后执行指定的command
+xz -dc BIG.xz | split -b200G --filter='xz > $FILE.xz' - big-
+将产生50个20G文件名字是big-xaa.xz, big-xab.xz, big-xac.xz等
+'-n chunks'
+'--number=chunks' 分隔输入到chunks输出
+'-a length'
+'--suffix-length=length'后缀长度
+'-d'
+'--numeric-suffixes' 使用数字后缀
+'-e'
+'--elide-empty-files' 防止空文件输出
+'-u'
+'--unbuffered' 立即复制输出到输入
+'--verbose'
+

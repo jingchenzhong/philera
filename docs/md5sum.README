@@ -1,0 +1,13 @@
+打印或检查MD5摘要128为校验码
+md5sum [option]... [file]...
+'-b'
+'--binary' 以二进制方式读取
+'-c'
+'--check' 以文件中读取MD5校验值并检查
+'--quiet'
+'--status'
+'-t'
+'--text' 文本方式读取
+'-w'
+'--warn'
+'--strict'

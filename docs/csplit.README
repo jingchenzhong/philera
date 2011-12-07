@@ -1,0 +1,11 @@
+按照指定格式将文件分隔为'xx00', 'xx01'...输出
+同时每个块文件大小将被输出
+csplit [option]... input pattern...
+
+'n' 不包含n行
+'/regexp/[offset]' 包含当前行到下个行匹配regexp
+'%regexp%[offset]' 预先跳过匹配行，以其为文件分块边界
+'{repeat-count}' 将之前指定的模式重复指定的次数
+'{*}' 将之前指定的模式重复尽可能多的次数
+
+offset需要指定"+"或"-"

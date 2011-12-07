@@ -1,0 +1,15 @@
+输出文件第一部分
+head [option]... [file]...
+如果多于一个文件被指定，每个文件开始
+==> file name <== 分隔
+
+'-c k'
+'--bytes=k' 打印第一k字节
+'-n k'
+'--lines=k' 输出第一k行
+'-q'
+'--quiet'
+'--silent' 不打印文件名在头部
+'-v'
+'--verbose' 总是打印文件头部
+

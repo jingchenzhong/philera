@@ -1,6 +1,6 @@
 BEGIN{ FS=":"; n=1
     while (getline < "form.letter" > 0)
-        form[n++] = $0 # store lines from from.letter in an array
+        form[n++] = $0 # store lines from form.letter in an array
     "date" | getline d; split (d, today, " ")
     # output of date is Fri Mar 2 14:35:50  CST 2011
     thisday=today[2]". "today[3]", "today[6]

@@ -1,0 +1,16 @@
+计数字节，字符，空白分隔字和行的数目
+
+'-c'
+'--bytes' 字节数
+'-m'
+'--chars' 字符数
+'-w'
+'--words' 字数
+'-l'
+'--lines' 行数
+'-L'
+'--max-line-length' 只打印最大行长度
+'--files0-from=file' 只处理file里的文件
+
+例如: 找到任何.c .h文件最长的行的长度
+find . -name '*.[ch]' -print0 | wc -L --files0-from=- | tail -n1

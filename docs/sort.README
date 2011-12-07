@@ -1,0 +1,58 @@
+串联排序所有文件并输出结果
+'-c'
+'--check=diagnose-first' 检查是否已经排序
+'-C'
+'--check=quiet'
+'--check=silent' 
+'-m'
+'--merge' 合并给定文件到一组
+
+'-b'
+'--ignore-leading-blanks' 忽略起始空格
+'-d'
+'--dictionary-order' 按电话本排序
+'-f'
+'--ignore-case' 忽略大小写
+'-g'
+'--general-numeric-sort'
+'--sort=general-numeric' 按数字排序
+'-h'
+'--human-numeric-sort'
+'--sort=human-numeric' 
+'-i'
+'--ignore-nonprinting' 忽略非打印字符
+'-M'
+'--moth-sort'
+'--sort=month'
+'-n'
+'-numeric-sort'
+'--sort=numeric'
+'-r'
+'--reverse' 反序
+'-R'
+'--random-sort'
+'--sort=random'
+'--compress-program=prog' 使用prog压缩临时文件
+'--files0-from=file' 处理file列出文件
+'-k pos1[,pos2]'
+'--key=pos1[,pos2]'指定排序范围
+'--batch-size=nmerge' 一次合并最多nmerge输入
+'-o output-file'
+'--output=output-file'
+'--random-source=file'
+'-s'
+'--stable'
+'-S size'
+'--buffer-size=size'
+'-t separator'
+'--filed-separator=separator'
+'-T tempdir'
+'--temporary-directory=tempdir'
+'--parallel=n'
+'-u'
+'--unique'
+'-z'
+'--zero-teminated'
+
+例如：分隔符符是:,第二个域使用数字排序，第五个域的第三个字符和第四个字符按字母排序
+sort -t : -k 2,2n -k 5.3,5.4

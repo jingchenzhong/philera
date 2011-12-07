@@ -1,0 +1,3 @@
+计算循环冗余校验（CRC）
+cksum [option]... [file]...
+打印CRC校验给每个文件

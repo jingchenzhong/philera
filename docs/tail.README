@@ -1,0 +1,24 @@
+输出文件最后一部分
+tail [option]... [file]...
+如果多于一个文件，文件头添加
+==> file name <== 分隔
+
+'-c k'
+'--bytes=k' 输出最后k字节部分
+'-f'
+'--follow[=how]' 死循环试图都更多字节在文件末尾
+--follow=descriptor 跟踪文件使用描述符，
+--follow=name 跟踪文件使用名字
+'-F' 跟--follow=name --retry
+'--retry' 试图跟踪被移除后又被打开的文件
+'--sleep-interval=number' 修改等待秒数在两个迭代之间
+'--pid=pid' 可以指定进程号来追踪 
+$ make >& makerr & tail --pid=$! -f makerr
+'--max-unchnaged-stats=n' 
+'-n k'
+'--lines=k' 输出最后k行
+'-q'
+'--quiet'
+'--silent'
+'-v'
+'--verbose' 

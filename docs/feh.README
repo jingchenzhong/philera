@@ -1,0 +1,11 @@
+feh - 图片查看器和目录器:
+-Z,  --auto-zoom 缩放图片到屏幕大小
+--zoon percent|max|fill 当在全屏模式下或者窗口大小
+固定，缩放图片percent。
+-F, --fullscreen 窗口全屏
+--bg-fill 设置背景图
+
+
+feh -F -Z 1.png 查看1.png
+
+feh --bg-fill 1.png 将1.png设置为背景图
