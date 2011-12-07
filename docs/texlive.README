@@ -1,0 +1,8 @@
+latex:把源文件编译成dvi
+dvips:从dvi文件生成ps文件
+ps2pdf:从ps文件生成pdf文件
+dvipdfm:直接从dvi文件生成pdf
+pdftex:直接从源文件生成pdf
+bibtex:生成引文
+texhash:刷新tex的搜索目录数据库
+xdvi:dvi文件查看器，可重新载入新编译成的文件
