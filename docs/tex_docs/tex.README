@@ -1,6 +1,12 @@
 使用bsmi（繁体中文），gbsn（简体中文），min（日文），mj（韩文）;
 查阅/usr/share/texmf-dist/tex/latex/cjk/texinput/UTF8/*.fd
-
+对于texlive-cjk包使用如下命令：
 latex test.tex
 dvipdf test.dvi test.pdf
+
+对于xecjk安装yaourt -S xecjk
+使用xelatex sample.tex
+
+关于字体，可以使用fc-list查看当前系统中安装的字体
+fc-list :lang=zh-cn
 
