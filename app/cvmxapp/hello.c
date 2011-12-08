@@ -1,14 +1,15 @@
 #include <stdio.h>
 #include <cvmx.h>
-
+#include <cvmx-flash.h>
 
 int main(void)
 {
-    printf("\n");
+
+    cvmx_flash_initialize();
+    void *flash_ptr = cvmx_flash_get_base(0);
+    printf ("0x%016llx\n", (unsigned long long)flash_ptr);
     printf("\n");
     printf("Hello world!\n");
-
-    simprintf("Hello again - a big number is 0x%llx\n", 0x1234567887654321ULL);
 
     printf("Hello example run successfully.\n");
     return 0;

@@ -22,6 +22,13 @@ include $(OCTEON_ROOT)/application.mk
 run4: $(TARGET)
 	oct-sim $(TARGET) -quiet -noperf -numcores=4
 
+# install
+install: $(TARGET)
+	scp $(TARGET) hzchlg06:~
+	ssh hzchlg06 "scp $(TARGET) fews:~"
+	ssh hzchlg06 ssh fews "scp $(TARGET) bcn209-cla:~/leilewan"
+	ssh hzchlg06 ssh fews ssh bcn209-cla "/root/leilewan/cp_test.sh"
+
 # clean target
 clean:
 	rm -rvf $(TARGET)
