@@ -1,1 +1,4 @@
-VimCrypt~01!ÈD¹òöænĞÈ_‹o#³)k1ÿ DÇz›½?­ØP½Bk[|6z.³hqM$&V±›Æ·NıâšFF¾§¯h1¾¯;Ô‘{v(—çNx¦§Û3ÕQ¥ù=—q“]^-¼„ æTøú/nıÈ”0q¾¢J.eŞ
+pushd /home/phil/repos/mcrnc/CAVIUMSDK_1.7.2-244-FP1/OCTEON-SDK
+source env-setup OCTEON_CN56XX_PASS2 --runtime-model
+popd
+
