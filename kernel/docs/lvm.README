@@ -1,0 +1,75 @@
+逻辑卷管理(LVM)：
+系统将物理卷管理抽象到更高的层次，常常会形成更简单的管理模式。
+通过物理磁盘和分区，无论他们的大小和分布方式如何，都被抽象为
+单一存储(single storage)源。
+LVM将分区和磁盘聚合成一个虚拟磁盘(virtual disk),从而用小的存储空间组成统一的
+大空间。这个虚拟磁盘称为卷盘(volume group).
+在磁盘池中添加磁盘和分区，对现有文件系统进行在线扩展
+用160GB磁盘替换两个80GB磁盘，而不需要让系统离线，也不需要在磁盘间手工转移数据
+当存储空间超过所需的空间量时，从池中去除磁盘，从而缩小文件系统
+使用快照（snapshot）执行一致的备份。
+
+LVM三元素：
+卷（Volume）：物理和逻辑卷和卷组
+区段（Extent）：物理和逻辑区段
+设备映射器（Device Mapper）：linux内核模块
+PV, VG, LV 卷组时物理卷的集合，卷组可分为多个逻辑卷
+卷组实现n-to-m的映射，在将PV分配给卷组之后，就可以创建任意大小的逻辑卷。
+LVM中的逻辑卷就像物理磁盘分区，在创建LV之后，可以使用任何文件系统对其进行格式化并将
+它挂载在某个挂载点。
+
+区段：
+为了实现n-to-m物理到逻辑卷的映射，PV，VG的基本块要相同大小，这些基本块称为物理区段PE
+和逻辑区段LE
+
+设备映射器：
+modeprobe dm_mod
+在创建VG和LV时，可以给他们一个有意义的名称将这些名称正确的映射到物理设备
+/dev/{vg_name}/{lv_name} --> /dev/mapper/{vg_name}{lv_name}
+与物理磁盘相反，无法直接访问卷组
+
+
+启动LVM2：
+modeprobe dm_mod
+pvscan
+vgchange -ay
+
+查看分区：
+fdisk -l
+
+创建PV和VG
+vgcreate test-volume /dev/hda2 /dev/hda10
+
+查看VG基本信息：
+vgdisplay -v test-volume
+
+创建逻辑卷：
+lvcreate -L 5G -n data test-volume
+
+查看LV属性：
+lvdisplay /dev/test-volume/data
+
+挂载LV：
+mkfs.reiserfs /dev/test-volume/data
+mkdir /data
+mount -t reiserfs /dev/test-volume/data /data
+df -h /data
+
+扩展卷：
+lvextend来扩展卷，不需要卸载它
+pvcreate /dev/hda2 /dev/hda3 /dev/hda5
+vgextend test-volume /dev/hda2 /dev/hda3 /dev/hda5
+lvextend -L 8G /dev/test-volume/data
+resize_reiserfs /dev/test-volume/data
+
+管理卷：
+lvreduce
+pvresize
+pvremove
+vgreduce
+vgmerge
+vgsplit
+vgchange
+lvchange
+lvconvert
+lvcreate -s -L 2G -n snap/dev/test-volume/test

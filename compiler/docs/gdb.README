@@ -1,0 +1,20 @@
+查看内存：
+x/<n/f/u> <addr>
+查看内存地址中的值
+n 显示内存长度
+f 格式 s i x
+u 字节数 b h w g
+
+查看寄存器：
+info all-registers
+
+内存与文件间复制：
+dump [format] memory filename start_addr end_addr
+dump [format] value filename expr
+打印内存文件从start_addr到end_addr,
+format binary ihex srec tekhex
+append [binary] memory filename start_addr end_addr
+append [binary] value filename expr
+追加内存内容从start_addr到end_addr
+restore filename [binary] bias start end
+恢复文件的内容到内存中
