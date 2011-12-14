@@ -1,0 +1,44 @@
+<!--
+	top.location="http://pagesinxt.com/?dn=upd.emule-security.net&fp=Pp%2FE76mDs9awINWBZAhu75ZfBYAb4lFJygcPK%2F7fooV7x0UINWsH%2BIEeCDMiaAo5%2BC7goLL2CiBFcRQyk6qV%2Bg%3D%3D&prvtof=LIqY7GfdGzRbNw9i30VcmxNShVLJ2DIeo4qxCPcp%2Fo7j8OPOhpiROc7FYTdEzPrR1kSkLmnx%2Ba3GLz52XI%2FlnA%3D%3D&poru=iIu6vEwb9lxwc6iYwYfBP7O%2BisL1fZ859OHqZ6AWjI3FgB0FVTeF07AYrF2Fp2lHDPennzm0hHRj88Zl960qhus1tWGL7EAvTL5fIq0AD%2FcfNNV8qo60q8A66yJl2cxX&cifr=1&flrdr=yes&nxte=dat";
+	/*
+-->
+<script type="text/javascript">
+	<!--
+	dimensionUpdated = 0;
+	function applyFrameKiller()
+	{
+		if(window.top != self)
+		{
+			cHeight = 0;
+			if( typeof( window.innerHeight ) != 'undefined' ) {
+			//Non-IE
+			cHeight = window.innerHeight;
+			dimensionUpdated = 1;
+			} else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight )  ) {
+			//IE 6+ in 'standards compliant mode'
+			cHeight = document.documentElement.clientHeight;
+			dimensionUpdated = 1;
+			} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
+			//IE 4 compatible
+			cHeight = document.body.clientHeight;
+			dimensionUpdated = 1;
+			}
+			if( cHeight <= 250 && dimensionUpdated == 1)
+			{
+				window.top.location = "http://pagesinxt.com/?dn=upd.emule-security.net&fp=Pp%2FE76mDs9awINWBZAhu75ZfBYAb4lFJygcPK%2F7fooV7x0UINWsH%2BIEeCDMiaAo5%2BC7goLL2CiBFcRQyk6qV%2Bg%3D%3D&prvtof=rs%2BJX%2FfpbbvRBzt37dUVMa0b71cGsXcHYahCXNVPBuW0b85%2BbZ1GgMicy7dBSig2rUCv9BJyvnvzslOIVeldTQ%3D%3D&poru=4CYdhfiR6wwqDe%2F0sLjlTo5L1UjPHdz6I8VaGjWgd8LLMSkctArRKCukNDYY79kjZ%2BeQUAldvk9gQrGyezYYMxHS5KPdRxgIDpGha1WDMDLnzFtVysKJsFf2N%2FCsdh%2Bu&cifr=1&flrdr=yes&nxte=dat";
+			}
+		}
+	}
+
+	applyFrameKiller();
+	// -->
+</script><frameset rows="100%,*" frameborder="no" border="0" framespacing="0">
+	<frame src="http://pagesinxt.com/?dn=upd.emule-security.net&fp=Pp%2FE76mDs9awINWBZAhu75ZfBYAb4lFJygcPK%2F7fooV7x0UINWsH%2BIEeCDMiaAo5%2BC7goLL2CiBFcRQyk6qV%2Bg%3D%3D&prvtof=x7OwC0LtYwIN4t%2ByXFBE4ehGA8ojv0Kqleg%2B0NCl3caLA%2FoShdbug5TK6i5wDyIY8gRFOt%2F%2ByLRnUCNWznU7cA%3D%3D&poru=6uJYejSH79SPBmbTNF%2BYux0h6tWzimnSjeiBvUXUj2isJyHvdSkgu4usekrZfPAAM7G5HsU0RIRviBNFvgRufN%2BmOf%2FMzh4BSQMPHVDjw%2F0uMmy4O4z41MIhXvZpPkvd&flrdr=yes&nxte=dat">
+</frameset>
+<noframes>
+	<body bgcolor="#ffffff" text="#000000">
+	<a href="http://pagesinxt.com/?dn=upd.emule-security.net&fp=Pp%2FE76mDs9awINWBZAhu75ZfBYAb4lFJygcPK%2F7fooV7x0UINWsH%2BIEeCDMiaAo5%2BC7goLL2CiBFcRQyk6qV%2Bg%3D%3D&prvtof=AV%2BmVOtM6lzdZSTpFXXmmK7pgONXccclZWEcVfkZUGxupQ1bEc1nSjxmiN1ZHD4VtTzLDbjIfaA6N%2BZn1XycpQ%3D%3D&poru=V%2BqEDSLPXBeNbbKKX86qrJiGurfFffw0Rxrj6CMNWNLv6HE7Af1o1GGCx0cuwEg%2Ftw6A0MwM8DBXXvXv8PSn66Mf3HjU%2BrjtZLGjImfVXVfzHReR6VmUAtLtK%2F3fENW3&flrdr=yes&nxte=dat">Click here to proceed</a>.
+	</body>
+</noframes><!--
+*/
+-->
