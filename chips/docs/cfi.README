@@ -1,0 +1,25 @@
+Common Flash Memory Interface Specification - CFI
+Query addressing总是与device word(最大支持)并且数据总是在最低位字节(D7 - D0)上
+1) 98h查询命令代码被写在设备内部地址空间上（最大地址总线宽度）55h地址
+2) 设备在任意读状态，例如"Read Array"或"Read ID Data".
+注意，对于设备宽度大于8bits，有效查询存取地址在数据总线高位字节全是零。因此16位查询命令
+代码是0098h和32位查询命令代码是00000098h.
+
+设备类型/模式          命令位置在最大设备总线宽度地址    命令数据    命令地址位置按字节  命令数据在字节地址
+x8 device/x8 mode             55h                         98h              55h              98h
+x16 device/x16 mode           55h                         0098h            AAh            AAh:98h ABh:00h
+x16 deivce/x8 mode            N/A                          N/A             AAh            AAh:98h
+x32 device/x32 mode           55h                        00000098h        154h            154h:98h 155h:00h 156h:00h 157h:00h
+x32 device/x16 mode           N/A                          N/A            154h            154h:98h 155h:00h
+x32 device/x8 mode            N/A                          N/A            154h            154h:98h
+系统必须驱动最低位地址来存取所有设备数组数据，当系统配置为x8模式。
+Flash设备可能有也可能没有地址敏感查询命令。设备驱动总是提供55h在地址总线（55h，AAh，和154h在x8,x16,x32数据总线
+配置），并且98h在数据总线进入查询模式，然而Flash设备可能选择忽略地址总线并进入查询模式如果98h在数据总线上可见。
+
+x8device/x8mode     10h  10h:51h 11h:52h 12h:59h                   - 10h
+x16device/x16mode   10h  10h:0051h 11h:0052h 12h:0059h             - 20h
+x16device/x8mode    N/A  N/A                                       - 20h
+x32device/x32mode   10h  10h:00000051h 11h:00000052h 12h:00000059h - 40h
+x32device/x16mode   N/A  N/A                                       - 40h
+x32device/x8mode    N/A  N/A                                       - 40h
+
