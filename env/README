@@ -22,7 +22,13 @@ blacklist pcspkr
 yaourt -S xpdf-simplified-chinese
 
 yaourt -S mplayer2 codecs
-在vmware下mplayer只支持vo=x11,不支持xv特性
+在vmware下mplayer支持vo=x11,不支持xv特性
+
+/etc/pacman.conf
+[repo-ck]
+Server = http://repo-ck.com/$arch
+
+pacman -Syy; pacman -S linux-ck-corex linux-ck-corex-headers
 
 Arch Boot Process
 POST --> MBR(GRUB) --> /boot/kernel26.img --> initramfs --> /sbin/init -->

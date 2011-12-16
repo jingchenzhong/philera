@@ -28,3 +28,4 @@ curl -v -A "$ua" -D "$cookie" -b "$cookie" -o page.html -d "$form" -e "$url1" "$
 -c newcookies.txt 写一个新cookie文件
 -E mycert.pem 授权证书
 -H "Context-Type: text/xml" 自定义缺省HTTP头
+-s 安静模式
