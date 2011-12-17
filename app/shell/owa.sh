@@ -20,12 +20,20 @@ COOKIES="cookies.txt"
 
 RESULT=$(curl -s -m 5 -L -A $UA -c $COOKIES -b $COOKIES -d "destination=https://webmail.nokiasiemensnetworks.com/Exchange&flags=0&trusted=4&username=$USER&password=$PASSWD" $AUTH_URL)
 
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo "$RESULT"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+#echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+#echo "$RESULT"
+#echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
-RESULT=$(curl -s -m 5 -A $UA -b $COOKIES -c COOKIES -L -e $REFER -G 'https://webmail.nokiasiemensnetworks.com/Exchange/leilei.wang/Inbox/?Cmd=contents&Page=1&View=%E9%82%AE%E4%BB%B6')
+RESULT=`curl -s -m 5 -A $UA -b $COOKIES -c COOKIES -L -e $REFER -G 'https://webmail.nokiasiemensnetworks.com/Exchange/leilei.wang/Inbox/?Cmd=contents&Page=1&View=%E9%82%AE%E4%BB%B6'`
+
+#echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+#echo "$RESULT"
+#echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+LIST=`echo "$RESULT" | sed -n 's/EML/EML\n/gp' | sed -n 's/^.*"Inbox\/\([^ "<>]*EML\)$/\1/gp' | awk '!aa[$0]++' `
+
+
 
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo "$RESULT"
+echo "$LIST"
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
