@@ -1,13 +1,11 @@
 #!/bin/bash
 
-if (( $# != 2 ))
-then
-    echo "Usage: $0 <user> <passwd>"
-    exit -1
-fi
+read -r -p "ACCOUNT(domain\user): " USER
+echo ""
+read -r -s -p "PASSWORD: " PASSWD
+echo ""
 
-USER="$1"
-PASSWD="$2"
+MAILLIST="maillist.txt"
 
 UA="Opera/9.80 (X11; Linux i686; U; en) Presto/2.10.229 Version/11.60"
 
@@ -18,22 +16,50 @@ AUTH_URL="https://webmail.nokiasiemensnetworks.com/Exchweb/bin/auth/owaauth.dll"
 COOKIES="cookies.txt"
 
 
-RESULT=$(curl -s -m 5 -L -A $UA -c $COOKIES -b $COOKIES -d "destination=https://webmail.nokiasiemensnetworks.com/Exchange&flags=0&trusted=4&username=$USER&password=$PASSWD" $AUTH_URL)
+RESULT=`curl -s -L -A $UA -c $COOKIES -b $COOKIES -d "destination=https://webmail.nokiasiemensnetworks.com/Exchange&flags=0&trusted=4&username=$USER&password=$PASSWD" $AUTH_URL`
 
 #echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 #echo "$RESULT"
 #echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
-RESULT=`curl -s -m 5 -A $UA -b $COOKIES -c COOKIES -L -e $REFER -G 'https://webmail.nokiasiemensnetworks.com/Exchange/leilei.wang/Inbox/?Cmd=contents&Page=1&View=%E9%82%AE%E4%BB%B6'`
+EXCHANGE_URL=`echo $RESULT | sed -n 's/^.*"\(https[^ <>"]*\)\/".*$/\1/gp'`
+if [[ "$EXCHANGE_URL" != "" ]]
+then
+    echo "PHASE1 - Auth OK!"
+else
+    echo "PHASE1 - Auth FAILED!"
+    exit -1
+fi
 
-#echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+RESULT=`curl -s -A $UA -b $COOKIES -c COOKIES -L -e $REFER -G "$EXCHANGE_URL/Inbox/?Cmd=contents&Page=1&View=%E9%82%AE%E4%BB%B6"`
+
+##echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 #echo "$RESULT"
 #echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
-LIST=`echo "$RESULT" | sed -n 's/EML/EML\n/gp' | sed -n 's/^.*"Inbox\/\([^ "<>]*EML\)$/\1/gp' | awk '!aa[$0]++' `
+LIST=`echo "$RESULT" | sed -n 's/EML/EML\n/gp' | sed -n 's/^.*"Inbox\/\([^ "<>]*EML\)$/\1/gp' | awk '!aa[$0]++'`
+if [[ "$LIST" != "" ]]
+then
+    echo "PHASE2 - Fetch Mail List DONE!"
+else
+    echo "PHASE2 - Fetch Mail List FAILED!"
+    exit -2
+fi
+
+#echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+echo "$LIST" | tee $MAILLIST | nl | sed 's/%20/_/g'
+#echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+read -p "Which Mail Fetched? " NUM
+echo ""
+
+EML=`sed -n "${NUM}p" $MAILLIST`
+
+RESULT=`curl -s -A $UA -b $COOKIES -c COOKIES -L -e $REFER -G "${EXCHANGE_URL}/Inbox/${EML}/?Cmd=open"`
+
+#echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+echo "$RESULT" | tee dd.html
+#echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 
 
 
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo "$LIST"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"

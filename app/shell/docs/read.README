@@ -1,0 +1,7 @@
+read -s -r -p "PASSWORD: " passwd
+
+-s 读取密码
+-r 不特殊处理字符\
+-p 提示信息
+-t timeout时间
+
