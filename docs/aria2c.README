@@ -1,0 +1,48 @@
+aria2c - 快速下载工具
+支持HTTP(s), FTP, BitTorrent, and Metalink.
+aria2能够从多个源/协议下载，试图最大化你的下载带宽。
+支持从HTTP，FTP下载的数据同时上传到BitTorrent网络
+使用Metalink的块校验，aria2自动验证数据块当下载BitTorrent文件
+
+基本选项：
+-d, --dir=DIR 存储下载文件的目录
+-i, --input-file=FILE 下载的URI从FILE中找到，可以指定多个URI给同一个项使用
+TAB在同一行隔开，当-被指定时指标准输入
+-l, --log=LOG log文件
+-j, --max-concurrent-download=N 最大并行下载个数，默认:5
+-V, --check-integrity[=true|false] 通过验证整个文件的hash来检查文件完整性
+对BitTorrent，Metalink下载带checksums或HTTP/FTP带--checksum选项有效,默认:false
+-c, --continue[=true|false] 继续下载部分被下载文件，只对HTTP/FTP下载有效
+-h, --help[=TAG|KEYWORD] #basic #advanced, #http, #https, #ftp, #metalink, 
+#bittorrent,#cookie, #hook,#file,#rpc, #checksum, #experimental,#deprecated,#help
+#all, 缺省:#basic
+
+HTTP/FTP选项：
+--all-proxy=PROXY 代理，可以通过--http-proxy,--https-proxy和--ftp-proxy选项覆写
+这个代理： [http://][USER:PASSWD@]HOST[:PORT]
+--all-proxy-passwd=PASSWD
+--all-proxy-user=USER
+--checksum=TYPE=DIGEST 设置校验， TYPE是哈希类型，DIGEST是十六进制digest
+--connect-timeout=SEC 链接超时时间
+--dry-run[=true|false] 如果是true， aria2只检查远程文件是否有效，并不下载数据
+--lowest-speed-limit=SPEED 如果下载速度小于等于指定速度就关闭链接
+-x, --max-connection-per-server=NUM 一个服务器的最大链接个数
+--max-file-not-found=NUM 如果aria2收到‘file not found’多少次强制下载失败
+-m, --max-tries=N 设置重试次数
+-k, --min-split-size=SIZE 最小分割大小
+-n, --no-netrc[=true|false] 禁用netrc支持
+--no-proxy=DOMAINS 指定特殊域下不使用代理
+-o, --out=FILE 下载保存到的文件名
+--proxy-method=METHOD 在代理请求下的方法，get或tunnel
+-R, --remote-time[=true|false] 获取远端文件的时间戳
+--reuse-uri[=true|false] 复用已经使用的URI
+--retry-wait=SEC 重试间隔
+--server-stat-of=FILE 指定文件名执行
+--server-stat-if=FILE
+--server-stat-timeout=SEC
+-s, --split=N 下载一个文件使用N个链接
+--stream-piece-selector=SELECTOR
+-t, --timeout=SECT
+--uri-selector=SELECTOR
+
+
