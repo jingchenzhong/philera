@@ -28,6 +28,7 @@ then
     echo "PHASE1 - Auth OK!"
 else
     echo "PHASE1 - Auth FAILED!"
+    echo "$RESULT"
     exit -1
 fi
 
@@ -43,6 +44,7 @@ then
     echo "PHASE2 - Fetch Mail List DONE!"
 else
     echo "PHASE2 - Fetch Mail List FAILED!"
+    echo "$RESULT"
     exit -2
 fi
 
@@ -58,8 +60,12 @@ EML=`sed -n "${NUM}p" $MAILLIST`
 RESULT=`curl -s -A $UA -b $COOKIES -c COOKIES -L -e $REFER -G "${EXCHANGE_URL}/Inbox/${EML}/?Cmd=open"`
 
 #echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-echo "$RESULT" | tee dd.html
+echo "$RESULT" | sed '1,/Microsoft/d' | tee ${NUM}_${EML}.html
 #echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+echo "elinks ${NUM}_${EML}.html"
+#w3m ${NUM}_${EML}.html
+
 
 
 

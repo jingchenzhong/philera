@@ -1,0 +1,6 @@
+在irssi中，设置一个不需要验证的代理的方法是 
+/SET use_proxy ON
+/SET proxy_address 代理地址
+/SET proxy_port 代理端口
+/SET -clear proxy_password
+/EVAL SET proxy_string CONNECT %s:%d HTTP/1.0\n\n
