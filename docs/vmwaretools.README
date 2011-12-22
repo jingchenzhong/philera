@@ -1,0 +1,16 @@
+1. 安装vmwaretools
+pacman -S open-vm-tools
+pacman -G open-vm-tools-modules
+cd open-vm-tools-modules;makepkg;yaourt -U open-vm-tools-modules*.pkg.*;cd -;
+2. 启动vmware服务：
+rc.conf: DAEMONS=(... @open-vm-tools..)
+手动：/etc/rc.d/open-vm-tools start
+3. 开始vmware toolbox:允许配置时间同步，链接或断开设备，收缩硬盘等）
+vmware-toolbox
+4. 安装X
+pacman -S xf86-input-vmmouse xf86-video-vmware或回退驱动
+pacman -S xf86-video-vesa
+5. 为了在VM和主机间复制和粘贴，需要打开vmware-user wrapper:
+chmod 4755 /usr/bin/vmware-user-suid-wrapper
+可将其放在.xinitrc中自动启动：
+vmware-user-suid-wrapper&
