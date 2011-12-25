@@ -1,0 +1,70 @@
+GNU Ocrad - OCR (Optical Character Recognition)光学字符识别
+读取pbm(bitmap),pgm(greyscale)或者ppm(color)格式图片，并且处理
+文本为字节(8-bit)或者UTF-8格式.
+
+库函数：
+const char * OCRAD_version (void);
+返回库版本字符串
+const char * OCRAD_version_string
+ocradlib.h
+struct OCRAD_Descriptor * OCRAD_open (void);
+初始化内部库
+int OCRAD_close (struct OCRAD_Descriptor * const ocrdes);
+释放动态数据结构
+enum OCRAD_Errno OCRAD_get_errno (struct OCRAD_Descriptor * const ocrdes);
+返回当前错误码
+int OCRAD_set_image (struct OCRAD_Descriptor *const ocrdes,
+        const struct OCRAD_Pixmap *const image, 
+        const unsigned char invert);
+加载图像到内部缓冲
+int OCRAD_set_image_from_file(struct OCRAD_Descriptor *const ocrdes,
+        const char *const filename, const unsigned char invert);
+加载文件到内部缓冲区
+int OCRAD_set_image_from_file(struct OCRAD_Descriptor *const ocrdes,
+        const char *const filename, const unsigned char invert)
+加载图像到内部缓冲区
+int OCRAD_set_threshold (struct OCRAD_Descriptor *const ocrdes,
+        const int threshold)
+设置二值化门限给greymap或RGB图像
+int OCRAD_scale (struct OCRAD_Descriptor *const ocrdes,
+        const int value)
+扩展图像到内部缓冲区
+int OCRAD_recognize(struct OCRAD_Descriptor *const ocrdes,
+        const char layout)
+识别图像，并处理文本结果
+int OCRAD_result_blocks(struct OCRAD_Descriptor *const ocrdes)
+返回文本块个数
+int OCRAD_result_lines(struct OCRAD_Descriptor *const ocrdes,
+        const int blocknum)
+返回文本行的个数
+int OCRAD_result_chars_total(struct OCRAD_Descriptor *const ocrdes);
+返回文本字符个数
+int OCRAD_result_chars_block(struct OCRAD_Descriptor *const ocrdes,
+        const int blocknum)
+返回给定文本块的字符个数
+int OCRAD_result_chars_line(struct OCRAD_Descriptor *const ocrdes,
+        const int blocknum, const int linenum);
+const char * OCRAD_result_line (struct OCRAD_Descriptor *const ocrdes, const int blocknum, const int linenum);
+int OCRAD_result_firt_character(struct OCRAD_Descriptor *
+        const cordes);
+
+图像格式转换：
+.png 使用pngtopnm filename.png | ocrad 如是png图标，
+pngtopnm filename.png | ocrad -i
+.ps .pdf 使用gs -sPAPERSIZE=a4 -sDEVICE=pnmraw -r300 -dNOPAUSE
+-dBATCH -sOutputFile=- -q filename.ps | ocrad
+也可使用pstopnm -stdout -dpi=300 -pgm filename.ps | ocrad
+.tiff tifftopnm filename.tiff | ocrad
+.jpg djpeg -greyscale -pnm filename.jpg | ocrad
+.pnm.gz gzip -cd filename.pnm.gz | ocrad
+.pnm.lz lzip -cd filename.pnm.lz | ocrad
+
+算法：
+1. 读取图像
+2. 执行一些转变（剪切，旋转，缩放等）
+3. 执行布局探测
+4. 移除表框和图片
+5. 探测字符和以行为组
+6. 识别字符（very ad hoc; one algorithm per character）
+7. 纠正一些错误（转换I.OOO为1.000等）
+8. 输出结果
