@@ -45,4 +45,43 @@ HTTP/FTP选项：
 -t, --timeout=SECT
 --uri-selector=SELECTOR
 
+BitTorrent Specific Options:
+--bt-enable-lpd 启用本地发现，默认：false
+--bt-exclude-tracker=URI[,...] 指定的BitTorrent tracker的通告URI移除
+--bt-external-ip=IPADDRESS 指定外部IP地址
+--bt-hash-check-seed[=true|false] 检查种子文件完整性
+--bt-lpd-interface=INTERFACE 给定接口给本地发现
+--bt-max-open-file=NUM 在每个BitTorrent下载中打开的最大文件个数
+--bt-metadata-only[=true|false] 只下载元数据
+--bt-min-crypto-level=plain|arc4 加密方法
+--bt-prioritize-piece=head[=SIZE],tail[=SIZE] 试图先下载，后下载哪个部分
+--bt-require-crypto[=true|false] 如果是true,aria2c不接受旧的Bittorrent握手
+--bt-request-peer-speed-limit=SPEED 如果每个torrent的总下载速度低于SPEED，
+aria2试图增加peer的数目
+--bt-save-metadata[=true|false] 保存元数据为.torrent文件
+--bt-seed-unverified[=true|false] 之前下载的文件种子没有检验
+--bt-stop-timeout=SEC 如果速度是0在连续SEC秒停止下载
+--bt-tracker=URI[,...] 
+--bt-tracker-connect-timeout=SEC
+--bt-tracker-interval=SEC
+--bt-tracker-timeout=SEC
+--dht-entry-point=HOST:PORT
+--dht-entyr-point6=HOST:PORT
+--dht-file-path=PATH
+--dht-file-path6=PATH
+--dht-listen-addr6=ADDR
+--dht-listen-port=PORT...
+--dht-message-timeout=SEC
+--enable-dht[=true|false]
+--enable-dht6[=true|false]
+--enable-peer-exchange[=true|false]
+--follow-torrent=true|false|mem
+-O, --index-out=INDE=PATH
+--listen-port=PORT...
+--max-overall-upload-limit=SPEED
+-u, --max-upload-limit=SPEED
+--peer-id-prefix=PEER_ID_PREFIX
+--seed-ratio=RATIO
+--seed-time-MINUTES
+-T, --torrent-file=TORRENT_FILE
 
