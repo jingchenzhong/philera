@@ -23,3 +23,13 @@ x32device/x32mode   10h  10h:00000051h 11h:00000052h 12h:00000059h - 40h
 x32device/x16mode   N/A  N/A                                       - 40h
 x32device/x8mode    N/A  N/A                                       - 40h
 
+
+
+写操作状态：
+DQ1, DQ2, DQ3, DQ5, DQ6, DQ7
+DQ7: Data# Polling
+标识主系统是否还在编程或擦除过程或完成，或擦除挂起状态
+注意Data# Polling只有在最后一个字正在被编程在write-buffer-page.
+读取Data# Polling状态在任意字除了最后一个正在被编程的字
+
+

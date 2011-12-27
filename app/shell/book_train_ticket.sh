@@ -5,6 +5,8 @@
 #    exit -1
 #fi
 
+read -p "User Name: " username
+read -p "Password: " passwd
 
 url1="https://dynamic.12306.cn/otsweb/login.jsp"
 
@@ -50,7 +52,7 @@ echo "randcode=${randcode}"
 url2="https://dynamic.12306.cn/otsweb/loginAction.do;jsessionid=${jsid}?method=login"
 
 # login system
-form="loginUser.user_name=nicephil@gmail.com&nameErrorFocus=&user.password=wangleihero&passwordErrorFocus=&randCode=${randcode}&randErrorFocus="
+form="loginUser.user_name=${username}&nameErrorFocus=&user.password=${passwd}&passwordErrorFocus=&randCode=${randcode}&randErrorFocus="
 
 curl -v -k -L -A "$ua" -D "$cookie" -b "$cookie" -o page.html -d "${form}" -e "$url1" "${url2}"
 if (( $? != 0 ))
