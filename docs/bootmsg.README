@@ -1,0 +1,9 @@
+保留启动信息在屏幕上：
+flow control ctrl+S 暂停输出，ctrl+Q恢复输出
+
+在/etc/rc.local里添加read -t 10 
+
+添加--noclear选项
+c1:2345:respawn:/sbin/agetty --noclear -8 38500 tty1 linux
+或c1:2345:respawn:/sbin/agetty --noissue -8 38500 tty1 linux
+
