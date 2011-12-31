@@ -1,0 +1,9 @@
+XFS: 对大文件有极好的性能，小文件速度低。对于/home是个好的选择
+ - mkfs.xfs -l internal.lazy-count=1,size=128m -d agcount=2 /dev/thetargetpartition
+ - LABEL=XFSHOME /home xfs noatime,logbufs=8 0 1
+Reiserfs: 对小文件有极好的性能，对于/var是个好的选择
+ - mkreiserfs -j /dev/hda1 /dev/hdb1
+Ext3: 性能平均，可靠的
+Ext4: 更全面的性能，可靠的，但与sqlite等一些数据库有性能问题
+JFS: 好的全面性能，极低的CPU使用，突然断电后极其快速的恢复
+Btrfs： 可能最好的全面性能（带压缩）和更多特性，仍在开发，不稳定

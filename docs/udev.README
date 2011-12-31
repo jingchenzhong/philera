@@ -1,0 +1,13 @@
+udev加载内核模块通过利用代码并行来提供一个潜在性能提升。
+模块异步被加载。
+udev rules:
+/etc/udev/rules.d/
+/lib/udev/rules.d/
+其中/etc下的那个先选择
+获取一个设备的详细属性使用：$ udevadm info -a -n /dev/sda
+如何写一个udev的rules：
+http://www.reactivated.net/writing_udev_rules.html
+
+execute on usb insert
+http://wiki.archlinux.org/index.php/Execute_on_usb_insert
+

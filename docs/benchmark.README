@@ -1,0 +1,14 @@
+glxgears - OpenGL测试，显卡直接渲染能力,但是已经老旧了
+superpi - 测试CPU计算能力
+interbench - 测试在Linux里的交互性,测量Linux内核修改的影响，或者系统配置修改例如cpu，I/O
+调度器和文件系统改变
+nttcp - 测试点到点带宽
+time - 命令执行后的时间统计
+Unigine - 产生很多现代OpenGL检测
+Bonnie++ - Bonnie检测套件，执行多个硬件驱动测试和文件系统性能测试
+iozoen - 执行广泛文件系统分析
+Hardinfo - 收集系统的硬件信息和操作系统信息，执行检测，和产生可打印报告
+Phoronix Test Suite - 更全面测试和检测
+PTS Desktop Live - Phoronix提供了一个Live-CD来提供所有Phoronix Test Suite特性
+
+
