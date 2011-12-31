@@ -1,0 +1,15 @@
+Intelligent Platform Management Interface
+标准计算机系统接口，被系统管理员用来管理一个计算机系统和监控他的操作
+IPMI子系统独立于操作系统，允许管理员远程管理系统当操作系统不工作或系统
+管理软件不工作。监控系统可能断电，但是必须连接电源和监控介质，比如本地
+网络。IPMI也可工作在操作系统起来之后，提供管理数据和结构给系统管理软件。
+IPMI只规定了结构和接口格式，然而实现可能多样。
+IPMI 1.5能够同直接串口连接或本地网络(LAN)连接到远程客户端。IPMI 2.0也能
+通过serial over LAN涁来通信系统管理员能使用IPMI消息查询平台状态，并回顾
+硬件日志，并发出其他请求从远程控制台，标准定义了一个报警机制给系统来发送
+一个simple network management protocol (SNMP) platform event trap (PET).
+
+IPMI子系统由主控制器， 称为baseboard management controller (BMC)和其他控制
+器。在同一个机架的控制器通过系统接口-IPMB(Intelligent Platform Management 
+Bus/Bridge) - 一个增强的I2C实现(Inter-Integrated Circuit). 
+
