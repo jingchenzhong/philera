@@ -1,0 +1,14 @@
+tesseract-x.xx.tar.gz 包含所有源代码
+tesseract-2.xx.<lang>.tar.gz 包含所有Tesseract 2 语言数据文件
+<lang>.traineddata.gz 包含Tesseract 3 语言数据文件
+
+tesseract-x.xx.<lang>.tar.gz 解压到tessdata目录，
+<lang>.traineddata.gz必须解压到tessdata目录
+boxtiff-2.01.<lang>.tar.gz 包含training使用的数据,当想要自己做training
+
+tesseract <image> <outputbasename> [-l lang] [configs]
+
+设置traineddata路径:export TESSDATA_PREFIX=/home/phil/priv/
+将eng.traineddata.gz解压缩到/home/phil/priv/tessdata/下
+
+tesseract 1.jpg result -l eng -psm 7 && cat result.txt
