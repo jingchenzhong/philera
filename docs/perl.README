@@ -1,0 +1,9 @@
+Perl的调用：
+1. 在命令行中明确调用perl解释器,例如:
+$ perl -e 'print "Hello, World!\n";'
+2. 对于长一些的脚本，将所有命令放进一个文件，例如：
+perl gradation
+3. 使用脚本：
+#!/usr/bin/perl -w
+
+

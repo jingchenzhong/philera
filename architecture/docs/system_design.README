@@ -1,0 +1,83 @@
+System View
+System Architecting
+http://www.ocw.mit.edu/OcwWeb/Engineering-Systems-Division/ESD-342Spring-2006/CourseHome/index.htm
+Advanced System Architecture graduate course since 2006 at the Massachusetts Institute of Technology - a theoretical foundation
+http://www.architectingforum.org
+System Architecture Forum hosted jointly by the Embedded Systems Institute (ESI) and the Stevens Institute of Technology (SIT)
+The State-of-Practice of Systems Architecting: Where Are We Heading?
+
+the value and the role of system architecture and system architects:
+. 需求，约束和可用技术之间的桥接，提供技术和商业的观点
+. 定义系统边界和他们的范围
+. 平衡多个需求（有时冲突，失真或者困惑）和权衡并处理在设计参数空间的巨大的变化性
+. 理解，描述和关系通信，接口和依赖在系统里，和不同的内部和外部系统之间
+. 设计考虑客户环境
+. 理解风险和风险设计原则
+. 操作和开发方面的生命周期设计
+. 短期和长期观点，提供，维护和通信未来的设想
+. 指令，提升和建议体系原则的指导和终端结果（被清晰主题驱动）被更高管理和R&D小组
+. 文档和'why', 'what', 'how', 'when' 'where' and 'who'沟通
+the roles of the Chief Architect 
+Innovation, Disruptive Change, and Architecting
+http://www.gaudistie.nl/SystemArchitectureBook.pdf
+System Architecting from a company's business processes point of view
+
+Hardware Technologies and Platforms
+SPaC = Performance/(Space*Cost)
+
+Advantech NCP-5120 with Dual Cavium Networks OCTEON Plus Processors
+Bivio DPI Application Platforms with NetLogic XLR Processor
+Sun Proprietary Chassis with UltraSPARC T2 and T2 Plus Processors
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
