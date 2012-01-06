@@ -13,3 +13,17 @@ Expect通常被用来建立一组测试套件，比如DejaGnu就是利用Expect�
 成一组测试套件。
 可以使用“autoexpect”的工具，自动生成expect脚本
 对于图形用户界面Autohotkey或者AutoIt来实现自动化控制
+
+
+set命令给变量赋值
+if,for,continue等命令控制程序流程
+spawn命令激活一个UNIX程序来进行交互式的运行
+send命令向进程发送字符串
+expect命令等待进程的某些字符串，支持正则表达式，并能同时等待多个字符串，并对每个字符串执行不同的操作
+expect patlist1 action1,patlist2 action2,...
+该命令一直等到进程的输出于以上一个模式匹配，或者等到时间超过一个特定的时间长度，或者遇到了文件结束为止
+被精确匹配的字符串被存储在变量expect_match里面，如果patlist是eof或者timeout,则发生文件结束或者超时时才执行
+相应的action，使用'set timeout 30'来设置超时时间
+march_max决定了多少字符可悲用来匹配
+
+
