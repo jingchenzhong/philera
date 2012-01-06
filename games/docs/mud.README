@@ -1,0 +1,7 @@
+LANG="zh_CN.GB2312" LC_ALL="zh_CN.GB2312" telnet hell.52mud.com 2008
+玩家命令：
+help, quit passwd
+save nick score
+hp id inventory
+set unset time
+f0uptime version wimpy

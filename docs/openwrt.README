@@ -1,0 +1,11 @@
+基于OpenWrt路由器和SSH的终极翻墙解决方案
+openssh-client, autossh, polipo
+
+autossh -M20000 -f -q -N -D 192.168.1.1:[代理端口][用户名@你的主机地址]
+polipo -c '/etc/polipo/config.example
+
+proxyAddress = "0.0.0.0" proxyPort = [端口]
+socksParentProxy = "192.168.1.1:[前面设置的ssh代理端口]" 
+socksProxyType = socks5"
+
+
