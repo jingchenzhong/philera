@@ -1,0 +1,8 @@
+tsocks - 透明SOCKS代理库
+在Linux CLI下使用socks代理需要使用tsocks
+/etc/tsocks.conf
+server = 127.0.0.1
+server_port = 1080
+server_type = 5
+
+tsocks yaourt -Syua
