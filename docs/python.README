@@ -1,0 +1,63 @@
+python简介
+变量和算术表达式：
+rate = 0.05
+principal = principal * (1 + rate)
+条件语句：
+if a < b:
+    print "Yes"
+else:
+    print "No"
+Python没有专门的switch或case语句
+文件输入和输出：
+import sys
+f = open("foo.txt")
+line = f.readline()
+f.close()
+字符串：
+x = "37"
+y = "42"
+z = x + y #z = "3742"
+z = int(x) + int(y)
+列表：
+names = [ "Dave", "Mark", "Ann", "Phil" ]
+a = names[2]
+元组：
+stock = 'GOOG', 100, 490.10
+集合：
+s = set([3,5,9,10])
+t = set("Hello")
+a = t | s
+字典：
+stock = {
+    "name" : "GOOG",
+    "shares" : 100,
+    "price" : 490.10
+}
+迭代与循环：
+for n in [1,2,3,4]
+    print "2 to the %d power is %d" % (n, 2**n)
+函数：
+def remainder(a,b):
+    q = a //b
+    r = a - q*b
+    return r
+生成器：
+使用yield让函数生辰一个结果序列
+def countdown(n):
+    print "Counting down!"
+    while n > 0:
+        yield n
+        n -= 1
+协程：
+函数运行时要使用一组输入参数，但是也可以把函数编写为一个任务，从而能处理发送给它的一系列输入
+对象与类：
+items = [37, 42]
+items.append(73)
+异常：
+如果程序中出现错误，就会引起异常
+try:
+    f = open ("file.txt", "r")
+except IOError as e:
+    print e
+模块：
+import div as foo
