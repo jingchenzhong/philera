@@ -1,0 +1,83 @@
+Tcl - Tool Command Language
+#!/usr/bin/tclsh
+
+Tcl命令：
+都是以一个关键字开始，可能有参数，一条命令只占一行，如果在行尾加上一个\,
+就可以让一条长命令占多行
+引号，适号和变量的替换会首先进行，替换后得到的结果才最终执行的命令
+command argument1 argumen ?option1? ?option2? ...
+
+变量和值：
+变量中字符是分大小写的，并且可以任意长度。变量名或变量值里有特殊字符需要
+引号括起来。
+set命令用来设置变量， 使用时变量名前加"$"
+set a 123
+puts [expr $a + $a]
+如果一条命令里引用其他命令的结果，需要把那条命令放在方括号里
+unset a 去掉一个变量
+
+引用和替换：
+变量的替换 - 在变量名上加个"$"
+set apple 5
+set orange $apple
+命令的替换 - set pear [expr $orange + 1]
+反斜线字符的替换 - 转义, 续行
+字符串引用 - 双引号，允许变量替换，
+花括号引用 - 不允许进行变量替换
+Tcl解释器替换 - Tcl对命令中的变量只进行一轮替换
+如果“单词”以"$"开始，Tcl将进行变量替换
+如果“单词”以左方括号"["开始，Tcl将进行命令替换，即再次调用Tcl
+解释器把整个“单词”当作一个新的Tcl脚本来处理，然后用其结果替换
+掉原来的“单词”
+如果“单词”以左花括号"{"开始，单词中的所有内容（除开始和结尾处
+的左右花括号以外）就都将保持原样，包括空格，"$"符号等
+如果“单词”里包含着反斜线字符"\", Tcl将进行反斜线替换
+$a                    a的值
+[command]             解释执行command的结果
+{the formatted text}  原文
+\$word                $word
+
+set age 35
+set str {I'm $age years old}
+set cmd {puts "$str"}
+形成两层替换，可以使用eval命令或明确调用subst命令
+eval $cmd
+eval [subst $cmd]
+注释 - "#"注释
+
+计算：
+使用算术计算命令expr
+- + - !
+* / %
++ -
+<< >>
+< > <= >=
+= !=
+&
+^
+:
+&&
+||
+cond?yes:no
+acos asin atan atan2 ceil cos cosh exp floor fmod hypot log log10 pow sin sinh sqrt tan tanh
+
+控制结构：
+if命令 - if expr1 ?then? body1
+if expr1 ?then? body1 ?else? body2
+if (expr1) {
+    body1
+} else {
+    body2
+}
+switch命令 - switch ?options? string pattern body ?pattern body ...?
+switch ?options? string {pattern body ?pattern body ...?}
+for命令 - for start test next body
+while命令 - while test body
+
+错误处理：
+error命令 - error message ?info? ?code?
+catch命令 - catch script ?varname?
+
+字符串操作：
+string命令 - string option arg ?arg? ...
+
