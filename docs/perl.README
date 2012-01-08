@@ -6,4 +6,66 @@ perl gradation
 3. 使用脚本：
 #!/usr/bin/perl -w
 
+单数变量
+整数，浮点数，字符串，甚至指向其他变量或对象的引用
+$answer = 42;
+$pi = 3.1415926;
+$avocados=6.02e23;
+$pet = "Camel";
+$sign = "I love my $pet";
+$cost = 'It costs $pet';
+$thence = $whence;
+$salsa = $moles * $avocados;
+$exit = system("vi $file");
+$cwd = `pwd`;
+标量也可以保存对其他数据结构的引用，包括子例程和对象
+$ary = \@myarray; #引用一个命名数组
+$hsh = \%myhash; #引用一个命名散列
+$sub = \&mysub; #引用一个命名子例程
+$ary = [1,2,3,4,5]; #引用一个未命名数组
+$hsh = {Na => 19, c1 => 35}; #引用一个未命名散列
+$sub = sub{ print $state }; #引用一个未命名子例程
+$fido = new Camel "Amelia"; #引用一个对象
+如果使用一个尚未赋值的变量，这个未初始化的变量会在需要时自动存在 ""或0
+perl会根据环境自动将数据转换成正确的形式
+print $camels + 20, "\n";
+数组赋值：@home = ("couch", "chair", "table", "stove");
+给四个标量赋值 ($potato, $lift, $tennis, $pipe) = @home;
+交换两个变量：($alpha, $omega) = ($omega, $alpha);
+一对一赋值数组 $home[0] = "couch"; $home[1] = "chair";
+
+散列为关联数组
+%longday = ("Sun", "Sunday", "Mon", "Monday", "Tue", "Tuesday");
+%longday = ("Sun" => "Sunday", "Mon" => "Monday", "Tue" => "Tuesday");
+如果想要找到与Mon对应的值：$laongday{"Mon"}
+
+$a + $b
+$a * $b
+$a % $b
+$a ** $b
+++$a, $a++
+--$a, $a--
+$a && $b
+$a || $b
+! $a
+$a and $b
+$a or $b
+not $a
+$a xor $b
+等于 == eq
+不等于 != ne
+小于 < lt
+大于 > gt
+小于或等于 <= le
+大于或等于 >= ge
+比较 <=> cmp
+-e $a
+-r $a
+-w $a
+-d $a
+-f $a
+-T $a
+while until for foreach
+next last
+=~符号（模式绑定操作符)
 
