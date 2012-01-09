@@ -14,6 +14,7 @@ set IPandPort "1080"
 set username "vpn1"
 set remoteHost "ssh.inyun.in"
 set password "chenguiwen"
+#set tmp [exec /usr/bin/polipo -c '/etc/polipo/config.sample' &] 
 spawn /usr/bin/ssh -D $IPandPort $username@$remoteHost;
 set timeout 60;
 expect "*password:*" {
