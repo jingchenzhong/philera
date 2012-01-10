@@ -1,0 +1,16 @@
+TTS文本转语音时语音合成应用的一种，经常与声音识别程序一起使用。
+MARY - Text-to-Speech System
+采用Java开发
+SpeakRight Framework - Helps to build Speech Recognition Applications
+Java框架，用于编写语音识别应用，基于VoiceXML技术使用StringTemplate模板
+Festival - Speech Synthesis System
+提供通用框架，提供了完整的文本转语音的API
+FreeTTS - Speech Synthesizer in Java
+基于Flite小型语音合成引擎开发的，采用Java开发
+Festvox - Builds New Synthetic Voices
+构建一个更系统化，全新的语音合成，是大部分语音合成库的基础
+eSpeak - Text to Speech
+小型，支持多种语音，使用共振合成，提供的语言文件非常小
+Flite - Fast Run Time Synthesis Engine
+小型快速TTS系统，是festival的C版本，用于嵌入式系统
+http://www.speech.cs.cmu.edu/flite/
