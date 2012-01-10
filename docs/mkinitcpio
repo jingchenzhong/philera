@@ -1,0 +1,69 @@
+mkinitcpio是新一代initramfs创建工具
+它是一个用来创建初始化内存盘的bash脚本
+初始化内存盘本质是一个很小的运行环境，用于加载一些核心模块，并在init接管启动过程之前
+准备一些必须的东西，比如加密根文件系统。使用mkinitcpio可以方便地使用自定义的钩子扩展
+运行时自动检测以及其他功能
+优势：
+使用轻量的busybox作为早期用户空间基础
+支持udev运行时硬件探测，避免加载不需要模块
+由于使用了支持钩子扩展的init脚本，可以方便使用pacman软件包安装自定义钩子扩展
+同时支持传统LUKCS卷殇的lvm2,dm-crypt，以及U盘启动所需要的mdadm，swsusp，suspend2
+支持通过启动参数配置内核功能，无需重新编译
+支持内核的镜像包含，可以做自包含内核镜像
+使用其他配置文件创建镜像：
+mkinitcpio -c /etc/mkinitcpio-custom.conf -g /boot/linux-custom.img
+
+mkinitcpio的主配置文件在/etc/mkinitcpio.conf，此外内核软件包的预配置文件在/etc/mkinitcp
+io.d，如/etc/mkinitcpio.d/linux.preset
+用户可以编辑配置文件中的六个变量：
+MODULES：在钩子扩展运行前需要加载的内核模块 
+BINARIES：内存盘镜像中包含的额外的二进制文件
+FILES： 内存盘镜像中包含的其他文件
+HOOKS：要执行的钩子扩展
+COMPRESSION： 内存盘镜像的压缩方式
+COMPRESSION_OPTIONS： 传递给压缩工具的额外参数
+模块（MODULES）：
+指定了启动过程最开始需要加载的模块，用户可以禁用udev钩子扩展，并在此手动设置，以加快启动
+MODULES="piix ide_disk reiserfs"
+[...]
+HOOKS="base autodetect ide filesystems"
+附加文件（BINARIES，FILES）：
+指定了要加入内存盘镜像的文件，可以覆盖钩子扩展提供的文件。
+FILES="/etc/modprobe.d/modprobe.conf"
+BINARIES="fsck fsck.ext4"
+钩子扩展（HOOKS）：
+一个钩子扩展是在初始化内存盘执行的脚本，可以在/lib/initcpio/install目录里找到
+ls -l /lib/initcpio/install能够给出可用钩子扩展的列表
+mkinitcpio -H base 给出了指定钩子扩展的帮助输出
+钩子扩展按照执行顺序被列出，并被用来加文件或模块到镜像。因此，钩子扩展影响安装-
+当mkinitcpio运行来产生镜像-或运行时-通过被包含的脚本在启动时运行。脚本能在
+/lib/initcpio/hooks目录里找到.
+缺省配置:HOOKS="base udev autodetect pata scsi sata filesystems"
+如果支持加密的LVM2卷组：HOOKS="base udev autodetect pata scsi sata lvm2 encrypt filesystems"
+HOOK       安装时                               运行时
+base  组装所有初始化目录,并安装基础工具和库  -
+      总是加入这个hook
+udev  加入udevd,udevadm,和最小集合的udev规  开始udev守护进程并处理uevents从内核：
+      则到你的镜像                          创建设备节点，
+auto   通过创建一个模块的从扫描sysfs得到的   -
+detect 白列表来缩小你的初始化内存盘最小大小
+       确保已经正确包含了模块没有遗忘，这个
+       钩子扩展必须在所有其他子系统前。任何
+       放在前面的钩子扩展将完全安装
+pata  添加新的libata/PATA IDE模块到镜像      -
+sata  添加串行ATA模块到镜像
+scsi  添加SCSI模块到镜像
+usb   添加USB模块到镜像
+usbinput 添加USB HID模块到镜像
+fw    添加FireWire模块到镜像
+net   添加必要的网络设备模块                  提供NFS基础的根文件系统
+pcmcia 添加必要模块给PCMCIA设备
+dsdt  加载自定义ACPI DSDT文件在启动时         自定义DSDT文件被内核自动使用
+filesystems 包含必要文件系统模块
+lvm2  加载device mapper内核模块和工具         启用所有LVM2卷组
+mdadm 提供支持给装载从/etc/mdadm.conf来的数组 定位和装配软件RAID块设备
+mdadm_udev 提供装配数组通过udev               定位和装配软件RAID通过udev
+encrypt 添加dm-crypt模块和cryptsetup工具      探测和解锁一个加密根分区
+resume -                                      试图从“suspend to disk”恢复
+keymap 添加键映射和终端字体                   加载指定键映射和终端字体从rc.conf
+fsck    添加fsck工具和文件系统指定帮助        运行fsck在加载根设备之前
