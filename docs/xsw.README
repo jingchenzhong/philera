@@ -1,0 +1,16 @@
+xsw - a slideshow viewer
+template: tutorial
+ - bg: "back.jpg"
+ 每个'-'是一个新命令被执行。每个'+'是参数被复制从前一个
+命令
+image_path
+text
+x 水平位置
+y 垂直位置
+h 行间距
+size 字体大小（缺省：36）
+font 字体，必须是sans, serif, mono（缺省sans）
+style 字体类型，必须是nostyle, italic（缺省nostyle）
+align x位置的对齐，必须是left, center, right（缺省left）
+color 文本颜色（缺省white）
+border 文本边框颜色（缺省黑色）
