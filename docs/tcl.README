@@ -62,22 +62,38 @@ cond?yes:no
 acos asin atan atan2 ceil cos cosh exp floor fmod hypot log log10 pow sin sinh sqrt tan tanh
 
 控制结构：
-if命令 - if expr1 ?then? body1
-if expr1 ?then? body1 ?else? body2
+if命令 - if expr1 then body1
+if expr1 then body1 else body2
 if (expr1) {
     body1
 } else {
     body2
 }
-switch命令 - switch ?options? string pattern body ?pattern body ...?
-switch ?options? string {pattern body ?pattern body ...?}
+switch命令 - switch options string pattern body pattern body ...
+switch options string {pattern body pattern body ...}
 for命令 - for start test next body
+for {set x 1} {$x < 11} {incr x} {
+    if {$x == 5} {
+        puts " "
+        continue
+    }
+}
 while命令 - while test body
+set numbers {1 2 3 4 5}
+foreach x $numbers {
+    puts "x = $x"
+}
+
+set x 1 
+while {$x < 11} {
+    puts "x = $x"
+    incr x
+}
 
 错误处理：
-error命令 - error message ?info? ?code?
-catch命令 - catch script ?varname?
+error命令 - error message info code
+catch命令 - catch script varname
 
 字符串操作：
-string命令 - string option arg ?arg? ...
+string命令 - string option arg arg ...
 

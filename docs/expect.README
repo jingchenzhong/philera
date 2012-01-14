@@ -24,6 +24,17 @@ expect patlist1 action1,patlist2 action2,...
 该命令一直等到进程的输出于以上一个模式匹配，或者等到时间超过一个特定的时间长度，或者遇到了文件结束为止
 被精确匹配的字符串被存储在变量expect_match里面，如果patlist是eof或者timeout,则发生文件结束或者超时时才执行
 相应的action，使用'set timeout 30'来设置超时时间
-march_max决定了多少字符可悲用来匹配
+march_max决定了多少字符可被用来匹配
+
+expect [ -dDinN ] [ -c cmds ] [ [ -[f|b] ] cmdfile ] [ args ]
+Expect读取cmdfile获取执行命令的列表。它也可以作为脚本被调用#!/usr/bin/expect -f
+
+-c 执行一个命令在脚本之前。
+-d 启动一些诊断输出
+-D 启用交互式调试器
+-f 引用一个文件从其读出命令
+-b 当从stdin读取命令时需要从文件中一行行读取，需要使用这个选项
+-i 引起Expect交互式读取命令
+-- 可能被用来确定选项结尾
 
 
