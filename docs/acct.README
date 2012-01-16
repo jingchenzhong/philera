@@ -1,0 +1,7 @@
+ac - 打印链接时间统计
+accton - 打开/关闭计数
+last - 列举最后用户和终端的登录
+lastcomm - 列举最后命令的执行
+sa - 打印计数统计
+dump-acct - 打印计数文件为可读格式
+dump-utmp - 但因utmp文件为可读格式

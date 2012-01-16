@@ -1,0 +1,1 @@
+hexdump -C /dev/sda1 显示文件以十六进制和ASCII文本，像十六进制编辑器的显示

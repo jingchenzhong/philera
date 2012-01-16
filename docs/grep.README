@@ -1,0 +1,37 @@
+grep option pattern input_file_names
+查找输入文件以行为单位查找匹配范式的行
+
+-e pattern
+
+-f file
+
+-i 
+-y
+
+-v
+-w
+-x
+
+-c 
+-L
+-l
+-m
+-o
+-q
+-s
+
+-b
+-H
+-h
+-n
+-u
+-Z
+
+-A num
+--after-context=num 打印num行在匹配行之后
+-B num
+-before-context=num 打印num行在匹配行之前
+
+-a
+--text 处理二进制文件像文本文件一样
+
