@@ -23,6 +23,6 @@
 
 发现一个新的RPM，不知道它做什么用：rpm -qip koules.rpm
 
-
+强制安装包：rpm -ivh --nodeps --force koules.rpm
 
 
