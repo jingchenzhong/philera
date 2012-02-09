@@ -80,12 +80,12 @@ ${color #0077ff}Outbound Connection ${alignr} Remote Service/Port$color
  ${tcp_portmon 32768 61000 rhost 3} ${alignr} ${tcp_portmon 32768 61000 rservice 3}
  ${tcp_portmon 32768 61000 rhost 4} ${alignr} ${tcp_portmon 32768 61000 rservice 4}
 
-$color ${audacious_title}
- ${color #0077ff}${audacious_bar} $color
- ${texeci 60 imap_status.sh inbox UNSEEN} ${tab 15} Inbox
- ${texeci 60 imap_status.sh conky-commits UNSEEN} ${tab 15} conky-commits
- ${texeci 60 imap_status.sh conky-development UNSEEN} ${tab 15} conky-development
- ${texeci 60 imap_status.sh gtk-app-devel-list UNSEEN} ${tab 15} gtk-app-devel-list
- ${texeci 60 imap_status.sh gtk-doc-list UNSEEN} ${tab 15} gtk-doc-list
- ${texeci 60 imap_status.sh libdexter-commits UNSEEN} ${tab 15} libdexter-commits
- ${texeci 60 imap_status.sh libdexter-development UNSEEN} ${tab 15} libdexter-development
+#$color ${audacious_title}
+# ${color #0077ff}${audacious_bar} $color
+# ${texeci 60 imap_status.sh inbox UNSEEN} ${tab 15} Inbox
+# ${texeci 60 imap_status.sh conky-commits UNSEEN} ${tab 15} conky-commits
+# ${texeci 60 imap_status.sh conky-development UNSEEN} ${tab 15} conky-development
+# ${texeci 60 imap_status.sh gtk-app-devel-list UNSEEN} ${tab 15} gtk-app-devel-list
+# ${texeci 60 imap_status.sh gtk-doc-list UNSEEN} ${tab 15} gtk-doc-list
+# ${texeci 60 imap_status.sh libdexter-commits UNSEEN} ${tab 15} libdexter-commits
+# ${texeci 60 imap_status.sh libdexter-development UNSEEN} ${tab 15} libdexter-development
