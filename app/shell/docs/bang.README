@@ -8,4 +8,17 @@
 ^blan^foo 将上一条命令中的blah替换为foo
 ^blan^foo^ 将上一条命令中的所有blah替换为foo
 !blan:^a^b^ 将最近一次以blah开头的命令
+!N 重新执行历史清单中第N个命令
+!-N 重新执行倒数第N个命令
+!?blan? 重新执行最后一条包含blan的命令
 
+(cmds) 在子shell中执行命令
+{cmds} 在当前shell中执行命令
+
+
+变量扩展修饰符：
+${variable:-word} 如果变量varaible已经设置且非空，则代入它的值，否则，代入word
+${variable:=word} 已被设置且值非空，代入它的值，否则将variable的值设置为word，始终代入variable的值，位置参数不能使用这种方式
+${variable:+word} 如果variable已被设置且非空，代入word，否则，代入空值
+${variable:?word} 已被设置且非空，代入它的值，否则，输出word并且从shell退出
+${variable:offset:length} 获得variable值中位置从offset开始长度为length的字串

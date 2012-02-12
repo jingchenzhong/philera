@@ -1,0 +1,71 @@
+参数：echo $1 $2 $3 位置参数
+echo $* 所有位置参数
+echo $# 位置参数个数
+数组：declare -a fruit=( apples pears plums )
+    echo ${fruit[0]}
+命令替换：variable=`command`
+variable=$( command )
+算术运算：declare -i 算术运算(()) let命令
+(( 2#10 + 16#10 + 10#10 ))
+[[]]用于条件表达式的模式匹配，算术运算(())
+if command
+then
+  block of statements
+elif command
+then
+  block of statements
+else
+  block of statements
+fi
+
+case variable_name in
+  pattern1)
+    statements
+    ;;
+  pattern2)
+    statements
+    ;;
+esac
+
+while command
+do
+  block of statements
+done
+
+until command
+do
+  block of statements
+done
+
+for variable in word_lists
+do
+  block of statements
+done
+
+select variable in word_lists
+do
+  block of statements
+done
+
+do item in blue red green
+  echo $item
+done
+
+function function_name {
+    block of code
+}
+
+
+1. 别名
+2. 关键字
+3. 函数
+4. 内置命令
+5. 可执行文件和脚本
+
+
+变量扩展字串：
+${变量%模式}  将变量值的尾部与模式进行最小化匹配，并将匹配到的部分删除
+${变量%%模式} 将变量值的尾部与模式进行最大匹配，并将匹配到的部分删除
+${变量#模式} 将变量的头部与模式进行最小匹配
+${变量##模式} 将变量的头部与模式进行最大匹配
+${#变量} 替换为变量中的字符个数。如果是*或@,长度则是位置参量的个数
