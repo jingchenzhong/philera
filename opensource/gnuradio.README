@@ -1,0 +1,11 @@
+GNU Radio是一个免费并开源的软件开发工具集，提供信号处理模块，来实现软件无线电传输。
+它能和低成本外部RF硬件来创建软件定义的无线电，或者不用硬件在模拟环境下。
+
+uhd_fft.py 一个非常简单的光谱分析工具使用以额链接UHD设备例如USRP来显示在一个给定范
+围的光谱。
+uhd_rx_cfile.py 记录一个I/Q采样流使用一个链接UHD设备。采样被写入一个文件，随后能被
+离线分析，使用GNU Radio或者其它工具例如Octave或Matlab。
+uhd_rx_nogui.py 采样信号生成器，能产生大部分通用信号（sine,sweep, square,noise）。
+usrp_oscope.py 一个采样示波器
+gr_plot*.py
+http://gnuradio.org/
