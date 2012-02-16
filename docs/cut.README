@@ -1,0 +1,3 @@
+打印选中的行的部分
+-b byte-list
+--bytes=byte-list 选中只打印在byte-list的字节位置

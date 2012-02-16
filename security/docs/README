@@ -1,0 +1,4 @@
+动态链接器忽略了预加载用户指定库对于setuid/setgid程序的请求，然而可能glibc开发者提供了一个异常：
+LD_PRELOAD，提供了覆写共享库的机会，对于set-user-id/set-group-id ELF二进制，只有在标准搜索目录的库
+也set-user-ID将被加载
+为了被预加载在一个权限的程序，一个库必须被setuid并在信任的库搜索路径上。
