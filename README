@@ -1,16 +1,18 @@
 interesting topics:
+app
+architecture
 bootloader
 bsp
 chips
 compiler
-kernel
-lkm
-app
-test
 docs
-tmp
 env
 games
+kernel
+lkm
+opensource
+test
+tmp
 
 old porject host on googlecode:
 http://uhoo.googlecode.com/
