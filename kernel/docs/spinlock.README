@@ -1,0 +1,104 @@
+Spinlock在Linux中的实现
+
+SMP：Symmetric Multi-Processor:由多个核组成，每个核由自己独立的Cache，所有核共享内存和IO
+SMT：Symmetric Multi-Thread:每个核由多个硬件线程组成，每个核下的所有线程共享寄存器，ALU，Cache，内存和IO等资源
+NUMA：Non-Uniform Memory Access:一个由多个处理器组成，每个处理器作为一个结点在该系统中存在，对于内存，IO等资源
+共享
+
+Spinlock设计思想：Test-and-Set机制：
+1）INIT 初始化lock的值
+lock := CLEAR;
+
+2) LOCK CPU核反复轮询lock值直到处于空闲，然后利用Test-and-Set方式设置lock值，
+a。读取lock值，b。设置lock值，c。检查lock值是否设置成功
+while ((lock == BUSY) || (TestAndSet(lock) == BUSY));
+
+
+MIPS中Spinlock实现：
+LL（load linked word）和SC（Store Conditional Word）
+LL从内存中读取一个字，以实现Read-Modify-Write操作，LL d, off(b)指令，处理器会记住LL指令的这次操作（在CPU寄存器中
+设置一个不可见的bit位），同时LL指令读取的地址off(b)也会保存在处理器寄存器中，SC t, off(b)指令，会检查上次LL指令执行
+后的RMW操作是否原子，如果原子操作，t的值被更新在内存中，同时t的值会变为1,表示操作成功。
+
+SC指令执行失败可能：
+1）LL/SC操作序列过程，发生了一个异常或中断，打乱来RMW操作的原子性
+2）在多核处理器中，一个核在进行RMW操作时，别的核视图对同样地址操作
+
+Spin_Lock(lockkey)
+1:
+ll t0, lockkey
+bnez t0, 1b
+li t0, 1
+sc t0, lockkey
+beqz t0,1b
+sync
+
+Spin_Unlock(lockkey)
+sync
+sw zero, lockkey
+
+不足：
+不可重入,同一个核上如果在释放锁之前多次调用，将导致CPU死锁
+不能保证进程对共享资源访问的公平性和有序性，优先级反转
+被用于保护共享内存时，对于并发读操作的保护是多余的
+
+如果是单核采用Semphore，如果是多核采用Spinlock，但不能用在中断处理函数
+
+可重入Spinlock，在入参中提供一个标志核ID的Owner字段，当某个CPU核获取锁后，Owner字段就
+等于当前核ID。
+Reent_Spin_Lock(lockkey,owner)
+if (owner != currentCoreId)
+{
+    Spin_Lock(lockkey);
+    owner=currentCoreId;
+}
+
+Reent_Spin_Unlock(lockkey, owner)
+Spin_Unlock(lockkey);
+owner=0xFFFFFFFF;
+
+Spinlock的排队策略：
+FIFO Ticket Spinlock，将一个锁用next和owner两个字段来表示，并将申请锁的过程分为两个阶段：
+初次申请阶段，重复申请阶段，当初次申请锁时，当前CPU核取next字段所谓自己的ticket，并且next字段增加1,
+同时判断ticket和owner字段是否相等，如果相等则获取锁成功当重复申请锁时，只需要判断ticket与owner字段是否相等
+以决定锁是否申请成功。在释放锁时，将owner字段加1.
+
+读写Spinlock：
+将内存访问分为读和写两个部分。
+读写锁分为四个部分：Read_Lock, Read_Unlock, Write_Lock, Write_Unlock
+
+Read_Lock(lockkey)
+1:
+ll t0, lockkey
+bltz t0, 1b
+add t0, 1
+sc t0, lockkey
+beqz t0, 1b
+nop
+sync
+
+Read_Unlock(lockkey)
+1:
+ll t0, lockkey
+sub t0,1
+sc t0, lockkey
+beqz t0, 1b
+sync
+
+Write_Lock(lockkey)
+1:
+ll t0, lockkey
+bnez t0, 1b
+lui t0, 0x8000
+sc t0, lockkey
+beqz t0, 1b
+sync
+
+Write_Unlock(lockkey)
+1:
+sync
+sw zero, lockkey
+
+
+
+
