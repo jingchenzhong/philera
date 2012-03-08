@@ -1,0 +1,24 @@
+断开链接
+/disconnect /dc
+查看列表
+/server /s list
+/network /n list
+/channel /c list
+删除列表
+/server remove
+/network remove
+/channel remove
+添加
+/server add
+/network add
+/channel add
+身份识别
+/msg nickserv identify password
+滚屏
+/scrollback /sb
+/lastlog
+输入以/开头的内容
+/say /xxx
+窗口关闭
+/window close /wc
+/window 1 /w 1
