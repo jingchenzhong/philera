@@ -1,0 +1,2 @@
+convert output to png
+cat file|convert label:@- png:a.png

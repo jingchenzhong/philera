@@ -1,3 +1,94 @@
+标量 $ $cents 一个独立的值（数字或字符串）
+数组 @ @large 一列值，用数字键（key）
+散列 % %interest 一组值，用字符串键
+子例程 & &how 一段可以调用的Perl代码
+typeglob * *struck 所有叫struck的东西
+
+标量可以赋予：整数，浮点数，字符串，甚至指向其他变量或对象的引用。
+双引号进行变量内插和反斜杠内插,单引号取消内插
+
+引用 $ary = \@myarray; $hsh = \%myhash; $sub = \&mysub; $ary = [1,2,3,4,5];
+$hsh = {Na => 19, cl => 35}; $sub = sub{ print $state }; $fido = new Camel "Amelia";
+
+
+复数变量：数组和散列
+将列表当成一个标量
+$wife{"Jacob"} = ["Leah", "Rachel", "Bilhah", "Zilpah"];
+将散列当成一个标量
+$kids_of_wife{"Jacob"} = {
+    "Leah" => ["Reuben", "Simeon", "Levi", "Judah", "Issachar", "Zebulun"],
+    "Rachel" => ["Joseph", "Benjam"],
+    "Bilhah" => ["Dan", "Naphtali"],
+    "Zilpah" => ["Gad", "Asher"],
+};
+
+字符串操作：
+$a = 123;
+$b = 456;
+print $a + $b; #579
+print $a . $b; #123456 串联
+$a = 123;
+$b = 3;
+print $a * $b; #369
+print $a x $b; #123123123 重复
+
+print "-" x $screenwidth, "\n";
+
+$file x= 80;
+$val ||= "2";
+逻辑操作符， 短路
+
+$a and $b
+$a or $b
+not $a
+$a xor $b
+比较 <=> cmp 相等时为0,$a大是1,如果$b大为-1
+
+-f $a 文件
+-T $a 文本文件
+
+除""和"0"外，所有字符串为真
+除0外，所有数字为真
+所有引用为真
+所有未定义值为假
+unless在条件为假时执行代码
+until是假
+
+while (@ARGV) {
+    process(shift @ARGV);
+}
+
+foreach 用于针对一组标量中的每个标量运算
+foreach $user (@users) {
+    if (-f "$home{$user}/.nexrc") {
+        print "$user is cool.. they use a peral-aware vi!\n";
+    }
+}
+
+next
+last允许跳到整个循环结束
+=~模式绑定操作符
+空白[\t\n\r\f] \s
+词字符[a-ZA-Z_0-9] \w
+数字[0-9] \d
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Perl的调用：
 1. 在命令行中明确调用perl解释器,例如:
 $ perl -e 'print "Hello, World!\n";'
