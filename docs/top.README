@@ -1,0 +1,23 @@
+显示Linux任务
+A - 全屏
+d - 延迟
+I - Irix模式
+p - PID监控
+s - 安全模式
+B - 突出显示
+
+l - 负载平均/uptime
+t - Task/CPU状态
+m - Mem/Swap使用
+1 - 单个CPU
+
+b - 突出显示
+c - 命令行
+H - 线程
+i - 空闲任务
+R - 反序
+S - 渐增
+x - 列
+y - 行
+z - 彩色
+

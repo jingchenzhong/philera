@@ -74,6 +74,85 @@ $ 当前SHELL的PID
 - 当前shell选项
 ？上条命令的退出码
 ！最后一个进入后台的作业的PID
-() 命令编组，创建子SHELL
-{} 命令编组，不创建子SHELL
+( cd /; ls -l; ) 命令编组，创建子SHELL
+{ cd /; ls -l; } 命令编组，不创建子SHELL
 
+重定向：
+重定向按照他们出现的顺序依次从左到右处理
+每个前面有文件描述符的重定向可能被以{varname}格式的字代理，对于每个操作数除了>&- <&-shell将分配一个大于10的描述符并分配它给{varname}.如果>&-, <&-在{varname}之前，varname的数值定义的文件描述符被关闭
+重定向操作数的第一个字符是<,则引用标准输入，如果重定向第一字符是>则引用标注输出
+ls > dirlist 2>&1
+将标准输入和标准错误定位到文件dirlist
+ls 2>&1 > dirlist
+只定位标准输出到dirlist，因为标准错误被作为标准输出的一个副本
+/dev/fd/fd
+/dev/stdin
+/dev/stdout
+/dev/stderr
+/dev/tcp/host/port
+/dev/udp/host/port
+重定位输入：
+引起word文件名被打开来为了在文件描述符n上的读，或标准输入
+[n]<word
+重定位输出：
+文件名word的文件被打开来写在文件描述符n上。
+[n]>[|]word
+追加标准输出：
+[n]>>word
+重定位标准输出和标准错误：
+&>word
+>&word
+>word 2>&1
+追加标准输出和标准错误：
+&>>word
+>>word 2>&1
+Here文档：
+<<[-]word
+  here-document
+delimiter
+Here字符串：
+<<< word
+复制文件描述符：
+[n]<&word
+[n]>&word
+移动文件描述符：
+[n]<&digit-
+移动digit描述符到文件描述符n
+[n]>&digit-
+打开文件描述符：
+[n]<>word
+1>filename
+1>>filename
+2>filename
+2>>filename
+&>filename
+2>&1 重定位stderr到stdout
+i>&j 指向i文件的所有输出都发送到j中去
+>&j 所有stdout输出到j中
+0<FILENAME
+<FILENAME 从文件中接受输入
+[j]<>filename 为了读取文件filename，将它打开分配j给它
+
+数制转换： echo $(( 2#101011 ))
+二元命令中提供一个占位符
+: ${un=`whoami`}
+使用“参数替换”来评估字符串变量
+: ${HOSTNAME?} ${USER?} {DD?}
+进程ID变量$$
+大括号扩展：cat {file1,file2,file3} > combined_file
+
+{
+    read line1
+} < file
+
+{
+    echo "lsajfdj"
+} > file
+
+{} \; 路径名
+
+在后台运行一个循环
+for i in 1 2 3
+do 
+echo "$i"
+done&

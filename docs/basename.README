@@ -1,0 +1,7 @@
+basename /usr/bin/sort
+Output "sort".
+
+basename include/stdio.h .h
+Output "stdio".
+
+

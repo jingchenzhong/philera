@@ -11,6 +11,7 @@ PS1='\[\e[0;32m\]\u\[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[0;31m\]\$ \[\e[m\]\[\e[0;
 
 # modified commands
 alias diff='colordiff'
+alias opera='opera -fullscreen -nolirc -nowin -noargb -nomail -nosession ' 
 export GREP_COLOR="1;32"
 alias grep='grep --color=auto'
 alias more='less'

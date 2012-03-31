@@ -1,0 +1,6 @@
+dirname /usr/bin/
+Output "/usr".
+
+dirname stdio.h
+Output ".".
+
