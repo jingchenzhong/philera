@@ -39,8 +39,8 @@ mv $TPATH/url.log $TPATH/all_url.playlist
 errcode=1
 while (( $errcode != 0 ))
 do
-   #aria2c -d $TPATH -c -i $TPATH/all_url.playlist
-   wget --user-agent="Mozilla/4.0" -P $TPATH -i $TPATH/all_url.playlist
+   aria2c --file-allocation=none -d $TPATH -c -i $TPATH/all_url.playlist
+   #wget --user-agent="Mozilla/4.0" -P $TPATH -i $TPATH/all_url.playlist
 
    errcode=$?
 done
