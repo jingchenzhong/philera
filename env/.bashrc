@@ -71,6 +71,8 @@ JAVA_HOME=/usr/lib/jvm/java-7-openjdk/jre
 BROWSER=w3m
 EDITOR=vim
 #http_proxy="http://10.144.1.10:8080"
+#ftp_proxy=$http_proxy
+#export http_proxy ftp_proxy
 PAGER=less
 VISUAL=vim
 CDPATH=:.:..:~:~/repos
