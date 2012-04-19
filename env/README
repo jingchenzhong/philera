@@ -15,7 +15,7 @@ export LC_ALL="zh_CN.UTF-8"
 export LC_CTYPE="zh_CN.UTF-8"
 中文字体
 yaourt -S wqy-zenhei wqy-bitmapfont wqy-microhei wqy-microhei-lite ttf-arphic-ukai ttf-arphic-uming ttf-fireflysung ttf-ms-fonts
-yaourt -S fcitx rxvt-unicode zhcon  
+yaourt -S fcitx rxvt-unicode zhcon fbterm yong  
 禁止beep
 /etc/modprobe.d/modprobe.conf
 blacklist pcspkr
@@ -23,12 +23,28 @@ yaourt -S xpdf-simplified-chinese
 
 yaourt -S mplayer2 codecs
 在vmware下mplayer支持vo=x11,不支持xv特性
+yaourt -S cups ghostscript gsfonts hpoj
+
+http://www.openprinting.org/printers
 
 /etc/pacman.conf
 [repo-ck]
 Server = http://repo-ck.com/$arch
 
 pacman -Syy; pacman -S linux-ck-corex linux-ck-corex-headers
+
+mldonkey server:
+61.129.33.5:3721,1,Popgo Anime Server
+61.174.18.254:8080,1,华语P2P源动力
+89.248.174.84:6543,1,TVU DonkeyServer No1 - Now On New Hardware
+87.230.83.44:4661,1,www.UseNeXT.to
+221.130.192.27:8080,1,no1.eserver.emule.org.cn
+77.247.178.245:4242,1,eDonkeyServer No2
+77.247.178.244:4242,1,eDonkeyServer No1
+然后在全部设置里，把ED2K_connnect_only_prefered_servers打上钩
+去掉ED2K_update_server_list_XXXX的钩，有3项都取消
+然后在network禁用KAD和overnet
+现在下载速度稳定在120k+
 
 Arch Boot Process
 POST --> MBR(GRUB) --> /boot/kernel26.img --> initramfs --> /sbin/init -->

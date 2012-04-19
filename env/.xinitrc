@@ -10,6 +10,7 @@ export LC_CTYPE="zh_CN.UTF-8"
 export XMODIFIERS=@im=fcitx
 export GTK_IM_MODULE=fcitx
 export QT_IM_MODULE=fcitx
+killall fcitx
 fcitx &
 stardict -h &
 vmware-user-suid-wrapper&
