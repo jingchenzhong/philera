@@ -22,6 +22,7 @@ alias nano='nano -w'
 alias ping='ping -c 5'
 alias ..='cd ..'
 alias zhcon='zhcon --utf8'
+alias fbterm='LC_CTYPE="zh_CN.UTF-8" fbterm'
 export LESS="-R"
 eval $(dircolors -b)
 
@@ -73,6 +74,7 @@ EDITOR=vim
 #http_proxy="http://10.144.1.10:8080"
 #ftp_proxy=$http_proxy
 #export http_proxy ftp_proxy
+export TERM=xterm
 PAGER=less
 VISUAL=vim
 CDPATH=:.:..:~:~/repos
