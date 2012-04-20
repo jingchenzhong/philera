@@ -71,6 +71,7 @@ export PATH=/home/phil/priv/bin:usr/share/perl5/vendor_perl/auto/share/dist/Cope
 JAVA_HOME=/usr/lib/jvm/java-7-openjdk/jre
 BROWSER=w3m
 EDITOR=vim
+#http_proxy="http://10.159.32.155:8080"
 #http_proxy="http://10.144.1.10:8080"
 #ftp_proxy=$http_proxy
 #export http_proxy ftp_proxy
