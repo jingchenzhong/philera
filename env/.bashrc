@@ -1,3 +1,16 @@
+#
+export LC_CTYPE="zh_CN.UTF-8"
+
+export GTK_IM_MODULE="fcitx"
+export QT_IM_MODULE="fcitx"
+export XMODIFIERS="@im=fcitx"
+
+#export GTK_IM_MODULE="scim"
+#export QT_IM_MODULE="scim"
+#export XMODIFIERS="@im=scim"
+
+export OPERAPLUGINWRAPPER_PRIORITY=0
+export OPERA_KEEP_BLOCKED_PLUGIN=0
 
 # Check for an interactive session
 [ -z "$PS1" ] && return
@@ -67,18 +80,19 @@ alias chgrp='chgrp --preserve-root'
 
 
 # path
-export PATH=/home/phil/priv/bin:usr/share/perl5/vendor_perl/auto/share/dist/Cope:$PATH
-JAVA_HOME=/usr/lib/jvm/java-7-openjdk/jre
-BROWSER=w3m
-EDITOR=vim
+export PATH=/home/phil/priv/bin:$PATH
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk/jre
+export BROWSER=w3m
+export EDITOR=vim
 #http_proxy="http://10.159.32.155:8080"
 #http_proxy="http://10.144.1.10:8080"
 #ftp_proxy=$http_proxy
 #export http_proxy ftp_proxy
 export TERM=xterm
-PAGER=less
-VISUAL=vim
-CDPATH=:.:..:~:~/repos
+export PAGER=less
+export VISUAL=vim
+export EDITOR=vim
+export CDPATH="$HOME:$HOME/repos/:$HOME/mydoc"
 
 
 # erase dup history
@@ -88,3 +102,5 @@ export HISTCONTROL=ignorespace
 
 complete -cf sudo
 complete -cf man
+
+
