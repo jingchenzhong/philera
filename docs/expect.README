@@ -37,4 +37,119 @@ Expect读取cmdfile获取执行命令的列表。它也可以作为脚本被调�
 -i 引起Expect交互式读取命令
 -- 可能被用来确定选项结尾
 
+expect是一个可编程的跟交互式程序的对话器
+expect使用Tcl。Tcl提供了控制流程（例如，if，for，break）。表达式求值和各种特性例如递归，函数定义等。在这里使用的不用定义的命令例如set，if，exec等是Tcl命令。Expect支持额外的命令，在下面有描述。除非指定，否则命令返回空字符串。 
 
+命令按照字母顺序列在这里以至于能更开定位到他们。然而新用户可以找到他们更容易开始通过阅读spawn，send，expect和interact的描述。
+
+注意最好的介绍这个语言（Expect和Tcl）在书“Exploring Expect”中。包含在man中的例子也被包含，但是他们更有局限性因为man只是主要的引用材料。
+
+close [-slave] [-onexec 0|1] [-i spawn_id]
+关闭连接到当前进程。大多数互动程序将探测EOF在他们的stdin和exit，因此close通常杀死进程也够用。-i选项声明进程关闭对应的名字spawn_id的进程。
+expect和interact将探测当当前进程退出并隐式调用close。但是如果你杀死进程通过说“exec kill $pid”，你将必须显示调用close。
+-onexec选项决定是否spawn id将被关闭在任何新产生的进程或是否进程被覆盖。为了保留一个spawn id打开，使用0.一个非零整数的值将强制在任何新的进程被关闭。
+-slave选项关闭spawn id关联的slave。当连接被关闭，slave自动关闭。
+不管连接是否显式的或隐式的关闭，你应该调用wait来清理对应应内核进程槽。close不调用wait因为这里没有保证关闭进程连接将引起它退出。
+
+debug [[-now] 0|1]
+控制一个Tcl调试器，它允许你按步执行，设置断点等。没有参数，1被返回如果调试器没有运行，否则0被返回。
+带1参数，调试器开始，带0参数，调试器停止。如果1参数前有-now选项，调试器立刻开始，否则调试器在下一个Tcl声明开始。debug命令不能改变任何陷阱。像Expect带-D选项。
+
+disconnect
+断开一个复制的进程从终端。它继续运行在后台。进程被给它自己的进程组。标准输入输出重定位到/dev/null。
+如下片段是哟功能disconnect来继续运行脚本在后台。
+if {[fork]!=0} exit
+disconnect
+...
+如下脚本读取密码，并运行一个程序每小时决定每次它运行的密码。这个脚本提供密码以至于能值需要输入一次。
+send_user "password?\ "
+expect_user -re "(.*)\n"
+for {} 1 {} {
+    if {[fork]!=0} {sleep 3600; continue}
+    disconnect
+        spawn priv_prog
+        expect Password:
+        send "$expect_out(1,string)\r"
+        ...
+        exit
+}
+使用disconnect的优势大于shell异步进程特性，Expect能保存终端参数在断开之前。然后提供他们给新的pty。使用&，Expect没有机会读取终端参数因为终端已经断开在Expect接收到控制。
+
+exit [-opts] [status]
+引起Expect退出，或准备退出。
+-onexit 引起下个参数被使用作为退出回调函数。没有参数则当前退出回调函数返回。
+-noexit 引起Expect准备退出并停止，返回控制给操作系统。用户定义的退出回调函数也是Expect自己的内部函数。没有更多Expect命令被执行。如果你运行Expect带其它tcl扩展很有用。当前解释器保留以至于其它Tcl扩展能清除。如果Expect的exit被再次调用，回调函数不返回。
+紧接着退出，所有连接到产生进程被关闭。关闭被探测作为产生进程的EOF。exit没有其它行为除了正常的_exit(2)函数做的。因此产生的进程不能检查EOF继续执行。
+status是Expect的返回状态码。exit被隐式调用当脚本结束。
+
+exp_continue [-continue_timer] 命令exp_continue允许expect它自己集训执行而不是重新从他返回。缺省下，exp_continue重置timeout计时器。-continue_timer避免timer被重启。
+
+exp_internal [-f file] value 引起更多命令发送诊断信息给expect的stderr，如果value不是零。
+
+exp_open [args] [-i spawn_id]
+返回一个Tcl文件描述符跟原始的spawn id对应。文件描述符能使用如果它通过Tcl的open命令打开。
+-leaveopen 保留spawn id打开的访问通过Expect命令。一个wait必须在这个spawn id上执行。
+
+exp_pid [-i spawn_id]
+返回进程id对应当前产生的进程。如果-i被使用，pid返回对应的给定spawn id。
+
+exp_send
+同send
+
+exp_send_error
+同send_error
+
+exp_send_log
+同send_log
+
+exp_send_tty
+同send_tty
+
+exp_send_user
+同send_user
+
+exp_version [[-exit] version]
+保证脚本兼容当前Expect版本。不带参数，当前版本的Expect返回，这个版本可能被编码。 
+-exit选项，Expect打印错误并退出如果版本太旧。
+
+expect [[-opts] pat1 body1] ... [-opts] patn [bodyn]
+等待直到范式中的一个匹配一个产生的进程，一个特定时间期间过去后，或者文件结束。如果最终结果是空的，它可能忽略。
+在最近expect_before命令里的范式明确被使用在任何范式之前，所有参数可能加大括号，避免每行结束。
+如果范式是关键字eof，对应体被执行直到文件结束。如果一个范式是关键字timeout，对应体执行直到超时，如果没有timeout关键字使用，一个显示null动作被执行直到超时。缺省超时时间是10秒，但可能被设置，例如30秒，通过命令“set timeout 30”。一个无限超时被设计使用数值-1.如果范式是关键字default，对应体执行直到timeout或者文件结束。
+如果范式匹配，然后对应体执行，expect返回结果。如果多个范式匹配，首先出现的那个被选择。
+每次新的输出到达，它被与每个范式比较按照他们列出的顺序，因此你可能测试一个不在的匹配通过最后的范式保证出现，例如一个提示符。如果没有提示符，需要使用timeout。
+范式的制定有三种方法。缺省的使用Tcl的字符匹配命令，-gl选项可能被使用来保证范式。任何以“-”开始的范式被保护。
+例如，如下片段
+expect {
+    busy { puts busy\n; exp_continue }
+    failed abort
+    "invalid password" abort
+    timeout abort
+    connected
+}
+引号是必须的在第四个范式中，因为它包含空格。 范式带同样的行为需再次列举行为。使用标准正则表达式可以避免。
+标准正则格式使用Tcl的regexp定义的语法。
+expect {
+    busy {puts busy\n; exp_continue }
+    -re "failed|invalid password" abort
+    timeout abort
+    connected
+}
+-ex 导致范式精确匹配一个字符串。
+-nocase 导致大写字符输出。
+当读输出，最大2000字节能强制最早遗忘的字节。可能通过match_max改变。如果full_buffer被使用，忘记的字符被写入expect_out(buffer).
+patlist是关键字null，对应体被执行如果一个ASCII字符0匹配。通过glob或regexp范式无法匹配0字节。
+紧随着匹配一个范式，任何匹配和之前不匹配的输出将保存在expect_out(buffer).多达9各regexp子字符串被保存在expect_out(1,string)到expect_out(9,string).如果-indices使用，开始和结束的指数号的10字符串保存在变量expect_out(X,start)和expect_out(X,end)这里X是数字，对应子字符串的位置。
+例如, 如果一个进程产生"abcdefgh\n"输出。结果expect "cd"是如下被执行：
+set expect_out(0,string) cd
+set expect_out(buffer) abcd
+并且"efgh\n"留在缓冲里.如果程序产生"abbbcabkkkka\n", 结果expect -indices -re "b(b*).*(k+)"如下：
+set expect_out(0,start) 1
+set expect_out(0,end) 10
+set expect_out(0, string) bbbcabkkkk
+
+
+
+
+expect_before [expect_args]
+和expect一样的参数

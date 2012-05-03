@@ -1,0 +1,22 @@
+简单网络管理协议(Simple Network Management Protocol)是一种应用层协议，是TCP/IP协议族的一部分。它使网络设备之间能够方便地交换管理信息。能够让网络管理员管理网络的性能，发现和解决网络问题及进行网络的扩充。
+Agent =====> NMS
+
+一个SNMP网络包含三个重要的部分：被管理的设备(Managed device)，代理(Agent)和网络管理系统(Network-management systems , NMSs)，被管理的设备是一个存在于被管理的网络中的节点，在它上运行着代理，被管理的设备会收集和存储管理信息，通过SNMP使得这些信息可以被NMSs所使用。被管理的设备有时被称作网络元素(Network Elements),可以是路由器，接入服务器，交换机，网桥，集线器，电脑主机，打印机等。 
+ 代理是驻留在被管理设备上的网络管理软件模块，它知道本地计算机的管理信息并将这些信息翻译成兼容SNMP协议的形式。 
+  我们可以通过在NMSs上运行一些应用程序来监视和控制被管理的设备，NMSs会提供大量关于进程和内存资源的信息，而这些信息是管理好一个网络所必须的，在一个被管理的网中，可以有一个或多个NMSs。
+
+MIB 是描述被管理设备上的参数的数据结构。
+管理信息库 (MIB) 是一个具有分层特性的信息的集合，我们可以通过 SNMP 去存取它。MIB 的成员是一些被管理的对象 (Managed Object)，以对象标示符 (Object Identifiers) 来区分它们。被管理的对象由一个或多个对象实例 (Object Instances) 组成，本质上，这些对象实例就是变量。
+SNMP Trap 是 SNMP 的一部分，当被监控段出现特定事件，可能是性能问题，甚至是网络设备接口宕掉等，代理端会给管理站发告警事件。
+snmpget, snmpgetnext 可以支持独立请求，snmpwalk, snmptable, snmpdelta 则用来支持重复请求.
+snmpset 对支持 SNMP 的设备配置属性.snmpdf, snmpnetstat, snmpstatus 可以从支持 SNMP 的设备获取特定的信息.snmptranslate 命令将 MIB OIDs 的两种表现形式 ( 数字及文字 ) 相互转换。并显示 MIB 的内容与结构.
+Net-snmp 还提供了一个基于 Tk/perl 的，图形化的 MIB 浏览器 tkmib.
+
+
+
+SNMP基本命令： 
+ 可以使用read, write, trap, traversal 这四个命令监视和控制被管理的设备. 
+1) NMS用read命令去监视被管理的设备，这是通过NMS检查被管理设备上的一些变量所实现的。 
+2) NMS用write命令去控制被管理的设备，NMS可以改变存在于被管理设备上的一些关键变量的值。 
+3) 被管理的设备用trap命令非同步地向NMS报告事件，当一定类型的事件发生，被管理的设备就向NMS发trap命令。 
+4) traversal命令是NMS所使用的用来决定被管理的设备支持哪些变量，以及顺序收集关于变量表的信息，例如路由表。
