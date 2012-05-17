@@ -5,7 +5,7 @@
 function usage ()
 {
     echo "Usage: $1 <wenkuurl> [outputfilename]"
-    echo 'Example:./getwenku.sh http://wenku.baidu.com/view/b3391cc32cc58bd63186bd53.html?l=2.1.2'
+    echo 'Example:./getwenku.sh http://wenku.baidu.com/view/b3391cc32cc58bd63186bd53.html?l=2.1.2 filename.pdf'
     exit $2
 }
 
@@ -37,11 +37,11 @@ function main ()
         finalname="$fileid"
     fi
 
-    if [[ -x "${finalname}.pdf" ]]
+    if [[ -e "${finalname}" ]]
     then
         errno=3
-        echo "${finalname}.pdf is existed"
-        exit errno
+        echo "${finalname} is existed"
+        exit $errno
     fi
 
     #parse how many pages in this file
@@ -64,10 +64,12 @@ function main ()
         wget -c -q -O ${filename} "${filebaseurl}/${fileid}?pn=${frompage}&rn=1";\
         echo "page ${frompage} downloaded";\
         dd bs=106 skip=1 if=${filename} of=${filename}.swf &>/dev/null;\
-        swfrender -o $filename.png ${filename}.swf;\
+        #swfrender  -X 1240 -Y 1754 -o $filename.png ${filename}.swf;\
+        swfrender  -X 2480 -Y 3508 -o $filename.png ${filename}.swf;\
         rm ${filename};\
         echo "page ${frompage} converted to PNG";\
         )&
+        sleep 1
         echo "page ${frompage} ...."
         let frompage+=1
     done 
@@ -76,11 +78,11 @@ function main ()
     wait
 
     #generate proper PDF
-    convert ${fileid}*.png -compress zip -colors 256 -colorspace GRAY \
-            -resize 1020x1320 -density 120x120 -units PixelsPerInch ${finalname}.pdf
+    convert ${fileid}*.png ${finalname}.pdf
 
+    mv ${finalname}.pdf ${finalname}
     rm ${fileid}*.png ${fileid}*.swf
-    echo "${finalname}.pdf generated"
+    echo "PDF file - \"${finalname}\" generated"
 }
 
 main $*
