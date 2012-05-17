@@ -17,6 +17,7 @@ export OPERA_KEEP_BLOCKED_PLUGIN=0
 
 alias ls='ls --color=auto'
 alias vi='vim'
+alias xpdf='xpdf -papercolor "#C5E592"'
 # prompt
 # PS1='[\u@\h \W]\$ '
 PS1='\[\e[0;32m\]\u\[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[0;31m\]\$ \[\e[m\]\[\e[0;32m\]'
