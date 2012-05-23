@@ -1,4 +1,4 @@
-/* Title:  Linux/MIPS64r2 - execve /bin/sh - 48 bytes
+/* Title:  Linux-2.6.21.7/MIPS64r2 - execve /bin/sh - 48 bytes
    Author: nicephil nicephil@gmail.com
 .text
 .global __start
