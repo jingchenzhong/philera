@@ -14,7 +14,7 @@ sw	$zero,-4($sp)
 daddiu	$a0,$sp,-12
 slti	$a1,$zero,-1
 li	$v0,5057
-syscall
+syscall 0x40404
   
 objdump:
    0:	2806ffff 	slti	a2,zero,-1
@@ -28,7 +28,7 @@ objdump:
   20:	67a4fff4 	daddiu	a0,sp,-12
   24:	2805ffff 	slti	a1,zero,-1
   28:	240213c1 	li	v0,5057
-  2c:	0000000c 	syscall
+  2c:	0101010c 	syscall 0x40404
    
 */
  
@@ -47,7 +47,7 @@ char sc[] = {
         "\x67\xa4\xff\xf4"        /* addiu   $a0,$sp,-12    */
         "\x28\x05\xff\xff"        /* slti    $a1,$zero,-1   */
         "\x24\x02\x13\xc1"        /* li      $v0,5057      */
-        "\x00\x00\x00\x0c"        /* syscall              */
+        "\x01\x01\x01\x0c"        /* syscall 0x40404        */
 };
  
 void main(void)
