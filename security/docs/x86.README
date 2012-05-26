@@ -1,0 +1,12 @@
+EBP寄存器帧指针（FP）或者局部基指针（LB）用于引用当前堆栈帧中的变量
+保存帧指针SFP和返回值
+L  栈顶
+   buffer
+   flag
+       <----- EBP
+   SFP
+   ret
+   a
+   b
+   c
+H  d

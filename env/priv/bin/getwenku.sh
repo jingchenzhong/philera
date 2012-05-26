@@ -34,7 +34,7 @@ function main ()
     #final name
     if [[ "$finalname" == "" ]]
     then
-        finalname="$fileid"
+        finalname="$fileid.pdf"
     fi
 
     if [[ -e "${finalname}" ]]
@@ -69,7 +69,7 @@ function main ()
         rm ${filename};\
         echo "page ${frompage} converted to PNG";\
         )&
-        sleep 1
+        sleep 3
         echo "page ${frompage} ...."
         let frompage+=1
     done 

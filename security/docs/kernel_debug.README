@@ -1,0 +1,2382 @@
+Linux内核调试方法 
+
+kdb：只能在汇编代码级进行调试；
+
+　　优点是不需要两台机器进行调试。
+
+　　gdb：在调试模块时缺少一些至关重要的功能，它可用来查看内核的运行情况，包括反汇编内核函数。
+
+　　kgdb：能很方便的在源码级对内核进行调试，缺点是kgdb只能进行远程调试，它需要一根串口线及两台机器来调试内核(也可以是在同一台主机上用vmware软件运行两个操作系统来调试)
+
+printk() 是调试内核代码时最常用的一种技术。在内核代码中的特定位置加入printk() 调试调用，可以直接把所关心的信息打打印到屏幕上，从而可以观察程序的执行路径和所关心的变量、指针等信息。 Linux 内核调试器（Linux kernel debugger，kdb）是 Linux 内核的补丁，它提供了一种在系统能运行时对内核内存和数据结构进行检查的办法。Oops、KDB在文章掌握 Linux 调试技术有详细介绍，大家可以参考。 Kprobes 提供了一个强行进入任何内核例程，并从中断处理器无干扰地收集信息的接口。使用 Kprobes 可以轻松地收集处理器寄存器和全局数据结构等调试信息，而无需对Linux内核频繁编译和启动，具体使用方法，请参考使用 Kprobes 调试内核。
+
+/proc文件系统
+
+在 /proc 文件系统中，对虚拟文件的读写操作是一种与内核通信的手段，要查看内核回环缓冲区中的消息，可以使用 dmesg 工具（或者通过 /proc 本身使用 cat /proc/kmsg 命令）。清单 6 给出了 dmesg 显示的最后几条消息。
+
+清单 6. 查看来自 LKM 的内核输出
+[root@plato]# dmesg | tail -5
+cs: IO port probe 0xa00-0xaff: clean.
+eth0: Link is down
+eth0: Link is up, running at 100Mbit half-duplex
+my_module_init called.  Module is now loaded.
+my_module_cleanup called.  Module is now unloaded.
+
+
+可以在内核输出中看到这个模块的消息。现在让我们暂时离开这个简单的例子，来看几个可以用来开发有用 LKM 的内核 API。
+
+调试工具
+
+　　使用调试器来一步步地跟踪代码，查看变量和计算机寄存器的值。在内核中使用交互式调试器是一个很复杂的问题。内核在它自己的地址空间中运行。许多用户空间下的调试器所提供的常用功能很难用于内核之中，比如断点和单步调试等。目录
+[隐藏]
+1 内核bug跟踪 
+1.1 oops消息分析
+1.2 系统崩溃重启动 
+1.2.1 （1）工具kexec介绍
+1.2.2 （2）kdump介绍
+1.3 SysRq魔术组合键打印内核信息
+1.4 命令strace
+1.5 用函数printk打印内核信息
+1.6 内核探测kprobe
+1.7 Systemtap调试 
+1.7.1 （1）Systemtap原理
+1.7.2 （2）stap程序
+1.7.3 （3）Systemtap脚本语法
+2 kdb内核调试器 
+2.1 安装kdb
+2.2 使用kdb调试命令
+3 kgdb 
+3.1 kgdb调试原理
+3.2 建立kdbg联机调试的方法
+3.3 调试内核模块
+3.4 调试内核
+4 使用UML调试Linux内核 
+4.1 UML原理
+4.2 编译UML模式客户机Linux内核
+4.3 运行UML
+4.4 建立串行线和控制台
+4.5 建立网络
+4.6 在虚拟机间共享文件系统
+4.7 创建UML的文件系统
+4.8 主机文件访问
+4.9 内核调试
+5 断言语句
+6 同步锁调试
+
+内核bug跟踪 
+oops消息分析 
+
+（1）oops消息产生机制
+
+oops（也称 panic），称程序运行崩溃，程序崩溃后会产生oops消息。应用程序或内核线程的崩溃都会产生oops消息，通常发生oops时，系统不会发生死机，而在终端或日志中打印oops信息。
+
+当使用NULL指针或不正确的指针值时，通常会引发一个 oops 消息，这是因为当引用一个非法指针时，页面映射机制无法将虚拟地址映像到物理地址，处理器就会向操作系统发出一个"页面失效"的信号。内核无法"换页"到并不存在的地址上，系统就会产生一个"oops"。
+
+oops 显示发生错误时处理器的状态，包括 CPU 寄存器的内容、页描述符表的位置，以及其一些难理解的信息。这些消息由失效处理函数（arch/*/kernel/traps.c）中的printk 语句产生。较为重要的信息就是指令指针（EIP），即出错指令的地址。
+
+由于很难从十六进制数值中看出含义，可使用符号解析工具klogd。klogd 守护进程能在 oops 消息到达记录文件之前对它们解码。klogd在缺省情况下运行并进行符号解码。
+
+通常Oops文本由klogd从内核缓冲区里读取并传给syslogd，由syslogd写到syslog文件中，该文件典型为/var/log/messages(依赖于/etc/syslog.conf)。如果klogd崩溃了，用户可"dmesg > file"从内核缓冲区中读取数据并保存下来。还可用"cat /proc/kmsg > file"读取数据，此时，需要用户中止传输，因为kmsg是一个"永不结束的文件"。
+
+当保护错误发生时，klogd守护进程自动把内核日志信息中的重要地址翻译成它们相应的符号。klogd执行静态地址翻译和动态地址翻译。静态地址翻译使用System.map文件将符号地址翻译为符号。klogd守护进程在初始化时必须能找到system.map文件。
+
+动态地址翻译通常对内核模块中的符号进行翻译。内核模块的内存从内核动态内存池里分配，内核模块中符号的位置在内核装载后才最终确定。
+
+Linux内核提供了调用，允许程序决定装载哪些模块和它们在内存中位置。通过这些系统调用，klogd守护进程生成一张符号表用于调试发生在可装载模块中的保护错误。内核模块的装载或者卸载都会自动向klogd发送信号，klogd可将内核模块符号的地址动态翻译为符号字符串。
+
+（2）产生oops的样例代码
+
+使用空指针和缓冲区溢出是产生oops的两个最常见原因。下面两个函数faulty_write和faulty_read是一个内核模块中的写和读函数，分别演示了这两种情况。当内核调用这两个函数时，会产生oops消息。
+ 函数faulty_write删除一个NULL指针的引用，由于0不是一个有效的指针值，内核将打印oops信息，并接着，杀死调用些函数的进程。 
+ssize_t faulty_write (struct file *filp, const char _ _user *buf, size_t count, loff_t *pos)
+{
+    /* make a simple fault by dereferencing a NULL pointer */
+    *(int *)0 = 0;
+    return 0;
+}
+
+函数faulty_write产生oops信息列出如下（注意 EIP 行和 stack 跟踪记录中已经解码的符号）： 
+Unable to handle kernel NULL pointer dereference at virtual address \
+   00000000 
+
+printing eip: c48370c3 *pde = 00000000 Oops: 0002 CPU: 0 EIP: 0010:[faulty:faulty_write+3/576] EFLAGS: 00010286 eax: ffffffea ebx: c2c55ae0 ecx: c48370c0 edx: c2c55b00 esi: 0804d038 edi: 0804d038 ebp: c2337f8c esp: c2337f8c ds: 0018 es: 0018 ss: 0018 Process cat (pid: 23413, stackpage=c2337000) Stack: 00000001 c01356e6 c2c55ae0 0804d038 00000001 c2c55b00 c2336000 \
+          00000001 
+     0804d038 bffffbd4 00000000 00000000 bffffbd4 c010b860 00000001 \ 
+          0804d038 
+     00000001 00000001 0804d038 bffffbd4 00000004 0000002b 0000002b \ 
+          00000004 
+
+Call Trace: [sys_write+214/256] [system_call+52/56]
+Code: c7 05 00 00 00 00 00 00 00 00 31 c0 89 ec 5d c3 8d b6 00 00
+
+上述oops消息中，字符串 3/576 表示处理器正处于函数的第3个字节上，函数整体长度为 576 个字节。 函数faulty_read拷贝一个字符串到本地变量，由于字符串比目的地数组长造成缓冲区溢出。当函数返回时，缓冲区溢出导致产生oops信息。因为返回指令引起指令指针找不到运行地址，这种错误很难发现和跟踪。 
+ssize_t faulty_read(struct file *filp, char _ _user *buf, size_t count, loff_t *pos)
+{
+    int ret;
+    char stack_buf[4];
+    /* Let's try a buffer overflow */
+    memset(stack_buf, 0xff, 20);
+    if (count > 4)
+        count = 4;
+    /* copy 4 bytes to the user */
+    ret = copy_to_user(buf, stack_buf, count);
+    if (!ret)
+        return count;
+    return ret;
+}
+
+函数faulty_read产生oops信息列出如下： 
+EIP: 0010:[<00000000>]
+
+Unable to handle kernel paging request at virtual address ffffffff printing eip: ffffffff Oops: 0000 [#5] SMP CPU: 0 EIP: 0060:[] Not tainted EFLAGS: 00010296 (2.6.6) EIP is at 0xffffffff eax: 0000000c ebx: ffffffff ecx: 00000000 edx: bfffda7c esi: cf434f00 edi: ffffffff ebp: 00002000 esp: c27fff78 ds: 007b es: 007b ss: 0068 Process head (pid: 2331, threadinfo=c27fe000 task=c3226150) Stack: ffffffff bfffda70 00002000 cf434f20 00000001 00000286 cf434f00 fffffff7 bfffda70 c27fe000 c0150612 cf434f00 bfffda70 00002000 cf434f20 00000000 00000003 00002000 c0103f8f 00000003 bfffda70 00002000 00002000 bfffda70 Call Trace: [] sys_read+0x42/0x70 [] syscall_call+0x7/0xb
+Code: Bad EIP value.
+
+在上述oops消息中，由于缓冲区溢出，仅能看到函数调用栈的一部分，看不见函数名vfs_read和faulty_read，并且代码（Code）处仅输出"bad EIP value."，列在栈上开始处的地址"ffffffff"表示内核栈已崩溃。 
+
+（3）oops信息分析
+
+面对产生的oops信息，首先应查找源程序发生oops的位置，通过查看指令指令寄存器EIP的值，可以找到位置，如：EIP: 0010:[faulty:faulty_write+3/576]。
+
+再查找函数调用栈（call stack）可以得到更多的信息。从函数调用栈可辨别出局部变量、全局变量和函数参数。例如：在函数faulty_read的oops信息的函数调用栈中，栈顶为ffffffff，栈顶值应为一个小于ffffffff的值，为此值，说明再找不回调用函数地址，说明有可能因缓冲区溢出等原因造成指针错误。
+
+在x86构架上，用户空间的栈从0xc0000000以下开始，递归值bfffda70可能是用户空间的栈地址。实际上它就是传递给read系统调用的缓冲区地址，系统调用read进入内核时，将用户空间缓冲区的数据拷贝到内核空间缓冲区。
+
+如果oops信息显示触发oops的地址为0xa5a5a5a5，则说明很可能是因为没有初始化动态内存引起的。
+
+另外，如果想看到函数调用栈的符号，编译内核时，请打开CONFIG_KALLSYMS选项。
+
+klogd 提供了许多信息来帮助分析。为了使 klogd 正确地工作，必须在 /boot 中提供符号表文件 System.map。如果符号表与当前内核不匹配，klogd 就会拒绝解析符号。
+
+有时内核错误会将系统完全挂起。例如代码进入一个死循环，系统不会再响应任何动作。这时可通过在一些关键点上插入 schedule 调用可以防止死循环。
+系统崩溃重启动 
+
+由于内核运行错误，在某些极端情况下，内核会运行崩溃，内核崩溃时会导致死机。为了解决此问题，内核引入了快速装载和重启动新内核机制。内核通过kdump在崩溃时触发启动新内核，存储旧内存映像以便于调试，让系统在新内核上运行 ，从而避免了死机，增强了系统的稳定性。
+（1）工具kexec介绍 
+
+kexec是一套系统调用，允许用户从当前正执行的内核装载另一个内核。用户可用shell命令"yum install kexec-tools"安装kexec工具包，安装后，就可以使用kexec命令。
+
+工具kexec直接启动进入一个新内核，它通过系统调用使用户能够从当前内核装载并启动进入另一个内核。在当前内核中，kexec执行BootLoader的功能。在标准系统启动和kexec启动之间的主要区别是：在kexec启动期间，依赖于硬件构架的固件或BIOS不会被执行来进行硬件初始化。这将大大降低重启动的时间。
+
+为了让内核的kexec功能起作用，内核编译配置是应确认先择了"CONFIG_KEXEC=y"，在配置后生成的.config文件中应可看到此条目。
+
+工具kexec的使用分为两步，首先，用kexec将调试的内核装载进内存，接着，用kexec启动装载的内核。
+
+装载内核的语法列出如下：
+
+kexec -l kernel-image --append=command-line-options --initrd=initrd-image
+
+上述命令中，参数kernel-image为装载内核的映射文件，该命令不支持压缩的内核映像文件bzImage，应使用非压缩的内核映射文件vmlinux；参数initrd-image为启动时使用initrd映射文件；参数command-line-options为命令行选项，应来自当前内核的命令行选项，可从文件"/proc/cmdline"中提取，该文件的内容列出如下：
+
+^-^$ cat /proc/cmdline
+
+ro root=/dev/VolGroup00/LogVol00 rhgb quiet
+
+例如：用户想启动的内核映射为/boot/vmlinux，initrd为/boot/initrd，则kexec加载命令列出如下：
+
+Kexec –l /boot/vmlinux –append=/dev/VolGroup00/LogVol00 initrd=/boot/initrd
+
+还可以加上选项-p或--load-panic，表示装载新内核在系统内核崩溃使用。
+
+在内核装载后，用下述命令启动装载的内核，并进行新的内核中运行：
+
+kexec -e
+
+当kexec将当前内核迁移到新内核上运行时，kexec拷贝新内核到预保留内存块，该保留位置如图1所示， 原系统内核给kexec装载内核预保留一块内存（在图中的阴影部分），用于装载新内核，其他内存区域在未装载新内核时，由原系统内核使用。
+
+
+图1 kexec装载的内核所在预保留位置示意图
+
+在x86构架的机器上，系统启动时需要使用第一个640KB物理内存，用于内核装载，kexec在重启动进入转储捕捉的内核之前备份此区域。相似地，PPC64构架的机器在启动里需要使用第一个32KB物理内核，并需要支持64K页，kexec备份第一个64KB内存。
+（2）kdump介绍 
+
+kdump是基于kexec的崩溃转储机制（kexec-based Crash Dumping），无论内核内核需要转储时，如：系统崩溃时，kdump使用kexec快速启动进入转储捕捉的内核。在这里，原运行的内核称为系统内核或原内核，新装载运行的内核称为转储捕捉的内核或装载内核或新内核。
+
+在重启动过程中，原内核的内存映像被保存下来，并且转储捕捉的内核（新装载的内核）可以访问转储的映像。用户可以使用命令cp和scp将内存映射拷贝到一个本地硬盘上的转储文件或通过网络拷贝到远程计算机上。
+
+当前仅x86, x86_64, ppc64和ia64构架支持kdump和kexec。
+
+当系统内核启动时，它保留小部分内存给转储（dump）捕捉的内核，确保了来自系统内核正进行的直接内存访问（Direct Memory Access：DMA）不会破坏转储捕捉的内核。命令kexec –p装载新内核到这个保留的内存。
+
+在崩溃前，所有系统内核的核心映像编码为ELF格式，并存储在内核的保留区域。ELF头的开始物理地址通过参数elfcorehdr=boot传递到转储捕捉的内核。
+
+通过使用转储捕捉的内核，用户可以下面两种方式访问内存映像或旧内存：
+
+（1）通过/dev/oldmem设备接口，捕捉工具程序能读取设备文件并以原始流的格式写出内存，它是一个内存原始流的转储。分析和捕捉工具必须足够智能以判断查找正确信息的位置。
+
+（2）通过/proc/vmcore，能以ELF格式文件输出转储信息，用户可以用GDB（GNU Debugger）和崩溃调试工具等分析工具调试转储文件。
+
+（3）建立快速重启动机制和安装工具
+
+1）安装工具kexec-tools
+
+可以下载源代码编译安装工具kexec-tools。由于工具kexec-tools还依赖于一些其他的库，因此，最好的方法是使用命令"yum install kexec-tools"从网上下载安装并自动解决依赖关系。
+
+2）编译系统和转储捕捉的内核
+
+可编译独立的转储捕捉内核用于捕捉内核的转储，还可以使用原系统内核作为转储捕捉内核，在这种情况下，不需要再编译独立的转储捕捉内核，但仅支持重定位内核的构架才可以用作转储捕捉的内核，如：构架i386和ia64支持重定位内核。
+
+对于系统和转储捕捉内核来说，为了打开kdump支持，内核需要设置一些特殊的配置选项，下面分别对系统内核和转储捕捉内核的配置选项进行说明：
+
+系统内核的配置选项说明如下：
+在菜单条目"Processor type and features."中打开选项"kexec system call"，使内核编译安装kexe系统调用。配置文件.config生成语句"CONFIG_KEXEC=y"。
+在菜单条目"Filesystem"->"Pseudo filesystems."中打开选项"sysfs file system support"，使内核编译安装文件系统sysfs.配置文件.config生成语句"CONFIG_SYSFS=y"。
+在菜单条目"Kernel hacking."中打开选项"Compile the kernel with debug info "，使内核编译安装后支持调试信息输出，产生调试符号用于分析转储文件。配置文件.config生成语句"CONFIG_DEBUG_INFO=Y"。
+
+转储捕捉内核配置选项（不依赖于处理器构架）说明如下：
+在菜单条目"Processor type and features"中打开选项"kernel crash dumps"，配置文件.config生成语句" CONFIG_CRASH_DUMP=y"。
+在菜单条目"Filesystems"->"Pseudo filesystems"中打开选项"/proc/vmcore support"，配置文件.config生成语句"CONFIG_PROC_VMCORE=y"。
+
+转储捕捉内核配置选项（依赖于处理器构架i386和x86_64）说明如下：
+在处理器构架i386上，在菜单条目"Processor type and features"中打开高端内存支持，配置文件.config生成语句"CONFIG_HIGHMEM64G=y"或"CONFIG_HIGHMEM4G"。
+在处理器构架i386和x86_64上，在菜单条目"rocessor type and features"中关闭对称多处理器支持，配置文件.config生成语句"CONFIG_SMP=n"。如果配置文件中的设置为"CONFIG_SMP=y"，则可在装载转储捕捉内核的内核命令行上指定"maxcpus=1"。
+如果想构建和使用可重定位内核，在菜单条目"rocessor type and featuresIf"中打开选项"Build a relocatable kernel"，配置文件.config生成语句"CONFIG_RELOCATABLE=y"。
+在菜单"Processor type and features"下的条目"Physical address where the kernel is loaded"设置合适的值用于内核装载的物理地址。它仅在打开了"kernel crash dumps"时出现。合适的值依赖于内核是否可重定位。
+
+如果设置了值"CONFIG_PHYSICAL_START=0x100000"，则表示使用可重定位内核。它将编译内核在物理地址1MB处，内核是可重定位的，因此，内核可从任何物理地址运行。Kexec BootLoader将装载内核到用于转储捕捉内核的内核保留区域。
+
+否则，将使用启动参数"crashkernel=Y@X"指定第二个内核保留内核区域的开始地址，其中，Y表示内存区域的大小，X表示保留给转储捕捉内核的内存区域的开始地址，通过X为16MB (0x1000000)，因此用户可设置"CONFIG_PHYSICAL_START=0x1000000"。
+
+在配置完内核后，编译和安装内核及内核模块。
+
+3）扩展的crashkernel语法
+
+在系统内核的启动命令行选项中，通常语法"crashkernel=size[@offset]"对于大多数据配置已够用了，但有时候保留的内存依赖于系统RAM。此时可通过扩展的crashkernel命令行对内存进行 限制避免从机器上移去一部分内核后造成系统不可启动。扩展的crashkernel语法列出如下：
+crashkernel=<range1>:<size1>[,<range2>:<size2>,...][@offset]
+
+其中，range=start-[end]。
+
+例如：crashkernel=512M-2G:64M,2G-:128M，含义为：如果内存小于512M，不设置保留内存，如果内存为512M到2G之间，设置保留内存区域为64M，如果内存大于128M，设置保留内存区域为128M。
+
+4）启动进入系统内核
+
+必要时更新BootLoader。然后用参数"crashkernel=Y@X"启动系统内核，如：crashkernel=64M@16M，表示告诉系统内核保留从物理地址0x01000000 (16MB)开始的64MB大小给转储捕捉内核使用。通常x86和x86_64平台设置"crashkernel=64M@16M"，ppc64平台设置"crashkernel=128M@32M"。
+
+5）装载转储捕捉内核
+
+在启动进入系统内核后，需要装载转储捕捉内核。根据处理器构架和映射文件的类型（可否重定位），可以选择装载不压缩的vmlinux或压缩的bzImage/vmlinuz内核映像。选择方法说明如下：
+
+对于i386和x86_64平台：
+如果内核不是可重定位的，使用vmlinux。
+如果内核是可重定位的，使用bzImage/vmlinuz。
+
+对于ppc64平台：
+使用vmlinux。
+
+对于ia64平台：
+使用vmlinux或vmlinuz.gz。
+ 如果用户使用不压缩的vmlinux映像，那么使用下面的命令装载转储捕捉内核： 
+kexec -p <dump-capture-kernel-vmlinux-image> \
+   --initrd=<initrd-for-dump-capture-kernel> --args-linux \
+   --append="root=<root-dev> <arch-specific-options>"
+
+如果用户使用压缩的bzImage/vmlinuz映像，那么使用下面的命令装载转储捕捉内核： 
+kexec -p <dump-capture-kernel-bzImage>\
+  --initrd=<initrd-for-dump-capture-kernel> \
+   --append="root=<root-dev> <arch-specific-options>"
+
+注意：参数--args-linux在ia64平台中不用指定。 
+
+下面是在装载转储捕捉内核时使用的构架特定命令行选项：
+对于i386, x86_64和ia64平台，选项为"1 irqpoll maxcpus=1 reset_devices"。
+对于ppc64平台，选项为"1 maxcpus=1 noirqdistrib reset_devices"。
+
+在装载转储捕捉内核时需要注意的事项说明如下：
+缺省设置下，ELF头以ELF64格式存储，以支持多于4GB内核的系统，在i386上，kexec自动检查物理RAM尺寸是否超过4GB限制，如果没有超过，使用ELF32。因此，在非PAE系统上ELF头总是使用ELF32格式。
+选项--elf32-core-headers可用于强制产生ELF32头，这是必要的，因为在32位系统上，GDB当前不能打开带有ELF64头的vmcore文件。
+在转储捕捉内核中，启动参数irqpoll减少了由于共享中断引起的驱动程序初始化失败。
+用户必须以命令mount输出的根设备名的格式指定<root-dev>。
+启动参数"1"将转储捕捉内核启动进入不支持网络的单用户模式。如果用户想使用网络，需要设置为3。
+通常不必让转储捕捉内核以SMP方式运行。因此，通常编译一个单CPU转储捕捉内核或装载转储捕捉内核时指定选项"maxcpus=1"。
+
+6）内核崩溃时触发内核启动
+
+在装载转储捕捉内核后，如果系统发生崩溃（Kernel Panic），系统将重启动进入转储捕捉内核。重启动的触发点在函数die(), die_nmi()和sysrq处理例程（按ALT-SysRq-c组合键）。
+
+下面条件将执行一个崩溃触发点：
+如果检测到硬件锁住，并且配置了"NMI watchdog"，系统将调用函数die_nmi()启动进入转储捕捉内核。
+如果调用了函数die()，并且该线程的pid为0或1,或者在中断上下文中调用die()，或者设置了panic_on_oops并调用了die()，系统将启动进入转储捕捉内核。
+在powerpc系统，当一个软复位产生时，所有的CPU调用die()，并且系统将启动进入转储捕捉内核。
+为了测试目的，用户可以使用"ALT-SysRq-c"，"echo c > /proc/sysrq-trigger"触发一个崩溃，或者写一个内核模块强制内核崩溃。
+
+7）写出转储文件
+
+在转储捕捉内核启动后，可用下面的命令写出转储文件：
+
+cp /proc/vmcore <dump-file>
+
+用户还可以将转储内存作为设备/dev/oldmem以线性原始流视图进行访问，使用下面的命令创建该设备：
+
+mknod /dev/oldmem c 1 12
+
+使用命令dd拷贝转储内存的特定部分，拷贝整个内存的命令列出如下：
+
+dd if=/dev/oldmem of=oldmem.001
+
+8）转储文件分析
+
+在分析转储映像之前，用户应重启动进入一个稳定的内核。用户可以用GDB对拷贝出的转储进行有限分析。编译vmlinux时应加上-g选项，才能生成调试用的符号，然后，用下面的命令调试vmlinux：
+gdb vmlinux <dump-file>
+
+SysRq魔术组合键打印内核信息 
+
+SysRq"魔术组合键"是一组按键，由键盘上的"Alt+SysRq+[CommandKey]"三个键组成，其中CommandKey为可选的按键。SysRq魔术组合键根据组合键的不同，可提供控制内核或打印内核信息的功能。SysRq魔术组合键的功能说明如表1所示。
+表1 SysRq组合键的功能说明键名	功能说明
+b	在没有同步或卸载硬盘的情况下立即启动。
+c	为了获取崩溃转储执行kexe重启动。
+d	显示被持的所有锁。
+e	发送信号SIGTERM给所有进程，除了init外。
+f	将调用oom_kill杀死内存热进程。
+g	在平台ppc和sh上被kgdb使用。
+h	显示帮助信息。
+i	发送信号SIGKILL给所有的进程，除了init外。
+k	安全访问密钥（Secure Access Key，SAK）杀死在当前虚拟终端上的所有程序。
+m	转储当前的内存信息到控制台。
+n	用于设置实时任务为可调整nice的。
+o	将关闭系统（如果配置为支持）。
+p	打印当前寄存器和标识到控制台。
+q	将转储所有正运行定时器的列表。
+r	关闭键盘Raw模式并设置为XLATE模式。
+s	尝试同步所有挂接的文件系统。
+t	将转储当前的任务列表和它们的信息到控制台。
+u	尝试以仅读的方式重挂接所有已挂接的文件系统。
+v	转储Voyager SMP处理器信息到控制台。
+w	转储的所有非可中断（已阻塞）状态的任务。
+x	在平台ppc/powerpc上被xmon（X监视器）接口使用。
+0~9	设备控制台日志级别，控制将打印到控制台的内核信息。例如：0仅打印紧急信息，如：PANIC和OOPS信息。
+
+
+默认SysRq组合键是关闭的。可用下面的命令打开此功能：
+# echo 1 > /proc/sys/kernel/sysrq
+
+
+关闭此功能的命令列出如下：
+# echo 0 > /proc/sys/kernel/sysrq
+
+
+如果想让此功能总是起作用，可在/etc/sysctl.conf文件中设置kernel.sysrq值为1。 系统重新启动以后，此功能将会自动打开。
+
+打开SysRq组合键功能后，有终端访问权限的用户就可以自用它打印内核信息了。
+ 注意：SysRq组合键在X windows上是无法使用的。必须先要切换到文本虚拟终端下。如果在图形界面，可以按Ctrl+Alt+F1切换到虚拟终端。在串口终端上，需要先在终端上发送Break信号，然后在5秒内输入sysrq组合键。如果用户有root权限，可把commandkey字符写入到/proc/sysrq-trigger文件，触发一个内核信息打印，打印的信息存放在/var/log/messages中。下面是一个命令样例： 
+^-^$ echo 't' > sysrq-trigger
+^-^vim /var/log/messages
+Oct 29 17:51:43 njllinux kernel: SysRq : Show State
+Oct 29 17:51:43 njllinux kernel:  task                        PC stack   pid father
+Oct 29 17:51:43 njllinux kernel: init          S ffffffff812b76a0     0     1      0
+Oct 29 17:51:43 njllinux kernel: ffff81013fa97998 0000000000000082 0000000000000000 ffff81013fa9795c
+Oct 29 17:51:43 njllinux kernel: 000000003fa97978 ffffffff81583700 ffffffff81583700 ffff81013fa98000
+Oct 29 17:51:43 njllinux kernel: ffffffff813cc5b0 ffff81013fa98350 000000003c352a50 ffff81013fa98350
+Oct 29 17:51:43 njllinux kernel: Call Trace:
+Oct 29 17:51:43 njllinux kernel: 000300000004 ffff8101333cb090
+Oct 29 17:51:43 njllinux kernel: Call Trace:
+Oct 29 17:51:43 njllinux kernel: [<ffffffff81040c2e>] sys_pause+0x19/0x22
+Oct 29 17:51:43 njllinux kernel: [<ffffffff8100c291>] tracesys+0xd0/0xd5
+Oct 29 17:51:43 njllinux kernel:
+Oct 29 17:51:43 njllinux kernel: lighttpd      S ffffffff812b76a0     0  3365      1
+Oct 29 17:51:43 njllinux kernel: ffff810132d49b18 0000000000000082 0000000000000000 ffff810132d49adc
+Oct 29 17:51:43 njllinux kernel: ffff81013fb2d148 ffffffff81583700 ffffffff81583700 ffff8101354896a0
+Oct 29 17:51:43 njllinux kernel: ffffffff813cc5b0 ffff8101354899f0 0000000032d49ac8 ffff8101354899f0
+Oct 29 17:51:43 njllinux kernel: Call Trace:
+Oct 29 17:51:43 njllinux kernel: [<ffffffff81040722>] ? __mod_timer+0xbb/0xcd
+Oct 29 17:51:43 njllinux kernel: [<ffffffff8129b2ee>] schedule_timeout+0x8d/0xb4
+Oct 29 17:51:43 njllinux kernel: [<ffffffff81040100>] ? process_timeout+0x0/0xb
+Oct 29 17:51:43 njllinux kernel: [<ffffffff8129b2e9>] ? schedule_timeout+0x88/0xb4
+Oct 29 17:51:43 njllinux kernel: [<ffffffff810b9498>] do_sys_poll+0x2a8/0x370
+……
+
+命令strace 
+
+命令strace 显示程序调用的所有系统调用。使用 strace 工具，用户可以清楚地看到这些调用过程及其使用的参数，了解它们与操作系统之间的底层交互。当系统调用失败时，错误的符号值（如 ENOMEM）和对应的字符串（如Out of memory）都能被显示出来。
+
+starce 的另一个用处是解决和动态库相关的问题。当对一个可执行文件运行ldd时，它会告诉你程序使用的动态库和找到动态库的位置
+
+strace命令行选项说明如表1。常用的选项为-t, -T, -e, -o等。
+表1 命令strace的命令行选项说明选项	说明
+-c	统计每个系统调用执行的时间、次数和出错的次数等。
+-d	输出一些strace自身的调试信息到标准输出。
+-f	跟踪当前进程由系统调用fork产生的子进程。
+-ff	如果使用选项-o filename,则将跟踪结果输出到相应的filename.pid中,pid是各进程的进程号。
+-F	尝试跟踪vfork调用.在-f时,vfork不被跟踪。
+-h	输出简要的帮助信息。
+-i	在系统调用的时候打印指令指针。
+-q	禁止输出关于粘附和脱离的信息，发生在输出重定向到文件且直接而不是粘附运行命令时。
+-r	依赖于每个系统调用的入口打印相对时间戳。
+-t	在输出中的每一行前加上时间信息。
+-tt	在输出中的每一行前加上时间信息，包括毫秒。
+-ttt	毫秒级输出,以秒表示时间。
+-T	显示系统调用所花费的时间。
+-v	输出所有的系统调用的信息。一些关于环境变量,状态,输入输出等调用由于使用频繁,默认不输出。
+-V	输出strace的版本信息。
+-x	以十六进制形式输出非ASCII标准字符串。
+-xx	所有字符串以十六进制形式输出。
+-a column	以特定的列数对齐返回值，缺省值为40。
+-e expr	指定一个表达式,用来控制如何跟踪.格式如下:
+[qualifier=][!]value1[,value2]...
+qualifier只能是 trace,abbrev,verbose,raw,signal,read,write其中之一。value是用来限定的符号或数字。默认的qualifier是 trace。感叹号是否定符号。
+-eopen	等价于 -e trace=open,表示只跟踪open调用。而-etrace!=open表示跟踪除了open以外的其他调用。
+-e trace=set	只跟踪指定的系统调用。例如:-e trace=open,close,rean,write表示只跟踪这四个系统调用。默认的为set=all。
+-e trace=file	只跟踪文件名作为参数的系统调用，一般为文件操作。
+-e trace=process	只跟踪有关进程控制的系统调用。
+-e trace=network	只跟踪与网络有关的所有系统调用。
+-e strace=signal	跟踪所有与系统信号有关的系统调用。
+-e trace=ipc	跟踪所有与进程间通信有关的系统调用。
+-o filename	将strace的输出写入文件filename。
+-p pid	跟踪指定的进程pid。
+-s strsize	指定最大字符串打印长度，默认值为32。
+-u username	以username的UID和GID执行命令。
+
+ 例如：命令strace pwd的输出部分列出如下： 
+execve("/bin/pwd", ["pwd"], [/* 39 vars */]) = 0
+uname({sys="Linux", node="sammy", ...}) = 0
+brk(0)                                  = 0x804c000
+old_mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x4001...
+	fstat64(3, {st_mode=S_IFREG|0644, st_size=115031, ...}) = 0
+old_mmap(NULL, 115031, PROT_READ, MAP_PRIVATE, 3, 0) = 0x40017000
+close(3)                                = 0
+open("/lib/tls/libc.so.6", O_RDONLY)    = 3
+read(3, "\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\360U\1"..., 1024) = 1024
+fstat64(3, {st_mode=S_IFREG|0755, st_size=1547996, ...}) = 0
+
+用函数printk打印内核信息 
+
+Linux内核用函数printk打印调试信息，该函数的用法与C库打印函数printf格式类似，但在内核使用。用户可在内核代码中的某位置加入函数printk，直接把所关心的信息打打印到屏幕上或日志文件中。
+
+函数printk根据日志级别（loglevel）对调试信息进行分类。日志级别用宏定义，展开为一个字符串，在编译时由预处理器将它和消息文本拼接成一个字符串，因此函数printk中的日志级别和格式字符串间不能有逗号。
+ 下面两个 printk 的例子，一个是调试信息，一个是临界信息： 
+printk(KERN_DEBUG "Here I am: %s:%i\n", _ _FILE_ _, _ _LINE_ _); 
+printk(KERN_CRIT "I'm trashed; giving up on %p\n", ptr);
+
+样例：在用户空间或内核中开启及关闭打印调试消息 用户还可以在内核或用户空间应用程序定义统一的函数打印调试信息，可在Makefile文件中打开或关闭调试函数。定义方法列出如下： 
+/*debug_on_off.h*/
+#undef PDEBUG             /* undef it, just in case */ 
+#ifdef SCULL_DEBUG 
+#ifdef _ _KERNEL_ _ 
+    /* This one if debugging is on, and kernel space */ 
+#define PDEBUG(fmt,args...) printk(KERN_DEBUG "scull: " fmt, ## args)
+#else 
+    /* This one for user space */ 
+#define PDEBUG(fmt, args...) fprintf(stderr, fmt, ## args) 
+#endif 
+#else 
+#define PDEBUG(fmt, args...) /* not debugging: nothing */ 
+#endif
+
+在文件Makefile加上下面几行： 
+# Comment/uncomment the following line to disable/enable debugging 
+DEBUG = y 
+ 
+# Add your debugging flag (or not) to CFLAGS 
+ifeq ($(DEBUG),y) 
+ DEBFLAGS = -O -g -DSCULL_DEBUG # "-O" 
+else 
+ DEBFLAGS = -O2 
+endif 
+ 
+CFLAGS += $(DEBFLAGS)
+
+
+更改makefile中的DEBUG值，需要调试信息时，DEBUG = y，不需要时，DEBUG赋其它值。再用make编译即可。
+内核探测kprobe 
+
+kprobe（内核探测，kernel probe）是一个动态地收集调试和性能信息的工具，如：收集寄存器和全局数据结构等调试信息，无需对Linux内核频繁编译和启动。用户可以在任何内核代码地址进行陷阱，指定调试断点触发时的处理例程。工作机制是：用户指定一个探测点，并把用户定义的处理函数关联到该探测点，当内核执行到该探测点时，相应的关联函数被执行，然后继续执行正常的代码路径。
+
+kprobe允许用户编写内核模块添加调试信息到内核。当在远程机器上调试有bug的程序而日志/var/log/messages不能看出错误时，kprobe显得非常有用。用户可以编译一个内核模块，并将内核模块插入到调试的内核中，就可以输出所需要的调试信息了。
+
+内核探测分为kprobe, jprobe和kretprobe（也称return probe，返回探测）三种。kprobe可插入内核中任何指令处；jprobe插入内核函数入口，方便于访问函数的参数；return probe用于探测指定函数的返回值。
+
+内核模块的初始化函数init安装（或注册）了多个探测函数，内核模块的退出函数exit将注销它们。注册函数（如：register_kprobe()）指定了探测器插入的地方、探测点触发的处理例程。
+
+（1）配置支持kprobe的内核
+
+配置内核时确信在.config文件中设置了CONFIG_KPROBES、CONFIG_MODULES、CONFIG_MODULE_UNLOAD、CONFIG_KALLSYMS_ALL和CONFIG_DEBUG_INFO。
+
+配置了CONFIG_KALLSYMS_ALL，kprobe可用函数kallsyms_lookup_name从地址解析代码。配置了CONFIG_DEBUG_INFO后，可以用命令"objdump -d -l vmlinux"查看源到对象的代码映射。
+
+调试文件系统debugfs含有kprobe的调试接口，可以查看注册的kprobe列表，还可以关闭/打开kprobe。
+
+查看系统注册probe的方法列出如下：
+#cat /debug/kprobes/list
+c015d71a  k  vfs_read+0x0
+c011a316  j  do_fork+0x0
+c03dedc5  r  tcp_v4_rcv+0x0
+
+
+第一列表示探测点插入的内核地址，第二列表示内核探测的类型，k表示kprobe，r表示kretprobe，j表示jprobe，第三列指定探测点的"符号+偏移"。如果被探测的函数属于一个模块，模块名也被指定。
+
+打开和关闭kprobe的方法列出如下：
+#echo ‘1’ /debug/kprobes/enabled
+#echo ‘0’ /debug/kprobes/enabled
+
+（2）kprobe样例
+
+Linux内核源代码在目录samples/kpobges下提供了各种kprobe类型的探测处理例程编写样例，分别对应文件kprobe_example.c、jprobe_example.c和kretprobe_example.c，用户稍加修改就可以变成自己的内核探测模块。下面仅说明kprobe类型的探测例程。
+
+样例kprobe_example是kprobe类型的探测例程内核模块，显示了在函数do_fork被调用时如何使用kprobe转储栈和选择的寄存器。当内核函数do_fork被调用创建一个新进程时，在控制台和/var/log/messages中将显示函数printk打印的跟踪数据。样例kprobe_example列出如下（在samples/kprobe_example.c中）：
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/kprobes.h>
+ 
+/* 对于每个探测，用户需要分配一个kprobe对象*/
+static struct kprobe kp = {
+	.symbol_name	= "do_fork",
+};
+ 
+/* 在被探测指令执行前，将调用预处理例程 pre_handler，用户需要定义该例程的操作*/
+static int handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+#ifdef CONFIG_X86
+	printk(KERN_INFO "pre_handler: p->addr = 0x%p, ip = %lx,"
+			" flags = 0x%lx\n",
+		p->addr, regs->ip, regs->flags);  /*打印地址、指令和标识*/
+#endif
+#ifdef CONFIG_PPC
+	printk(KERN_INFO "pre_handler: p->addr = 0x%p, nip = 0x%lx,"
+			" msr = 0x%lx\n",
+		p->addr, regs->nip, regs->msr);
+#endif
+ 
+	/* 在这里可以调用内核接口函数dump_stack打印出栈的内容*/
+	return 0;
+}
+ 
+/* 在被探测指令执行后，kprobe调用后处理例程post_handler */
+static void handler_post(struct kprobe *p, struct pt_regs *regs,
+				unsigned long flags)
+{
+#ifdef CONFIG_X86
+	printk(KERN_INFO "post_handler: p->addr = 0x%p, flags = 0x%lx\n",
+		p->addr, regs->flags);
+#endif
+#ifdef CONFIG_PPC
+	printk(KERN_INFO "post_handler: p->addr = 0x%p, msr = 0x%lx\n",
+		p->addr, regs->msr);
+#endif
+}
+ 
+/*在pre-handler或post-handler中的任何指令或者kprobe单步执行的被探测指令产生了例外时，会调用fault_handler*/
+static int handler_fault(struct kprobe *p, struct pt_regs *regs, int trapnr)
+{
+	printk(KERN_INFO "fault_handler: p->addr = 0x%p, trap #%dn",
+		p->addr, trapnr);
+	/* 不处理错误时应该返回*/
+	return 0;
+}
+ 
+/*初始化内核模块*/
+static int __init kprobe_init(void)
+{
+	int ret;
+	kp.pre_handler = handler_pre;
+	kp.post_handler = handler_post;
+	kp.fault_handler = handler_fault;
+ 
+	ret = register_kprobe(&kp);  /*注册kprobe*/
+	if (ret < 0) {
+		printk(KERN_INFO "register_kprobe failed, returned %d\n", ret);
+		return ret;
+	}
+	printk(KERN_INFO "Planted kprobe at %p\n", kp.addr);
+	return 0;
+}
+ 
+static void __exit kprobe_exit(void)
+{
+	unregister_kprobe(&kp);
+	printk(KERN_INFO "kprobe at %p unregistered\n", kp.addr);
+}
+ 
+module_init(kprobe_init)
+module_exit(kprobe_exit)
+MODULE_LICENSE("GPL");
+
+Systemtap调试 
+（1）Systemtap原理 
+
+Systemtap是一个基于kprobe调试内核的开源软件。调试者只需要写一些脚本，通过Systemtap提供的命令行接口对正在运行的内核进行诊断调试，不需要修改或插入调试代码、重新编译内核、安装内核和重启动等工作，使内核调试变得简单容易。Systemtap调试过程与在gdb调试器中用断点命令行调试类似。
+
+Systemtap用类似于awk语言的脚本语言编写调试脚本，该脚本命名事件并给这些事件指定处理例程。只要指定的事件发生，Linux内核将运行对应的处理例程。
+
+有几种类型的事件，如：进入或退出一个函数，一个定时器超时或整个systemtap会话开始或停止。处理例程是一系列脚本语言语句指定事件发生时所做的工作，包括从事件上下文提取数据，存储它们进入内部变量或打印结果。
+
+Systemtap的运行过程如图2所示，用户调试时用Systemtap编写调试脚本，Systemtap的翻译模块（translator）将脚本经语法分析（parse）、功能处理（elaborate）和翻译后生成C语言调试程序，然后，运行C编译器编译（build）创建调试内核模块。再接着将该内核模块装载入内核，通过kprobe机制，内核的hook激活所有的探测事件。当任何处理器上有这些事件发生时，对应的处理例程被触发工作，kprobe机制在内核获取的调试数据通过文件系统relayfs传回Systemtap，输出调试数据probe.out。在调试结束时，会话停止，内核断开hook连接，并卸载内核模块。整个操作过程由单个命令行程序strap驱动控制。
+
+
+图2 Systemtap运行过程
+（2）stap程序 
+
+stap程序是Systemtap工具的前端，它接受用systemtap脚本语言编写的探测指令，翻译这些指令到C语言代码，编译C代码产生并装载内核模块到正运行的Linux内核，执行请求的跟踪或探测函数。用户可在一个命名文件中提供脚本或从命令行中提供调试语句。
+
+命令stap的用法列出如下：
+
+stap [ OPTIONS ] FILENAME [ ARGUMENTS ]
+
+stap [ OPTIONS ] - [ ARGUMENTS ]
+
+stap [ OPTIONS ] -e SCRIPT [ ARGUMENTS ]
+
+stap [ OPTIONS ] -l PROBE [ ARGUMENTS ]
+
+选项[ OPTIONS ]说明如下：
+
+-h 显示帮助信息。
+
+-V 显示版本信息。
+
+-k 在所有操作完成后，保留临时目录。对于检查产生的C代码或重使用编译的内核对象来说，这是有用的。
+
+-u 非优化编译模式。.
+
+-w 关闭警告信息。
+
+-b 让内核到用户数据传输使用bulk模式。
+
+-t 收集时间信息：探测执行的次数、每个探测花费的平均时间量。
+
+-sNUM 内核到用户数据传输使用NUM MB 的缓冲区。当多个处理器工作在bulk模式时，这是单个处理器的缓冲区大小。
+
+-p NUM Systemtap在通过NUM个步骤后停止。步骤数为1-5： parse, elaborate, translate, compile, run。
+
+-I DIR 添加tapset库（用于翻译C代码的函数集）搜索目录。
+
+-D NAME=VALUE 添加C语言宏定义给内核模块Makefile，用于重写有限的参数。
+
+-R DIR 在给定的目录查找Systemtap运行源代码。
+
+-r RELEASE 为给定的内核发布版本RELEASE而不是当前运行内核编译内核模块。
+
+-m MODULE 给编译产生的内核模块命名MODULE，替代缺省下的随机命名。产生的内核模块被拷贝到当前目录。
+
+-o FILE 发送标准输出到命名文件FILE。在bulk模式，每个CPU的文件名将用"FILE_CPU序号"表示。
+
+-c CMD 开始探测，运行CMD，当CMD完成时退出。
+
+-x PID 设置target()𤣵到PID。这允许脚本作为指定进程的过滤器。
+
+-l PROBE 代替运行一个探测脚本，它仅列出所有匹配给定模式PROBE可用的探测点，模式PROBE可用通配符。
+
+--kmap[=FILE] 指定符号文件，缺省文件为/boot/System.map-VER-SION。探测的函数的地址和名字需要通过内核或内核模块的符号表解析。如果内核编译时没有调试信息或者探测是在没有调试信息的汇编语言言论的，这将是有用的。
+
+--ignore-vmlinux 忽略vmlinux文件。
+（3）Systemtap脚本语法 
+
+Systemtap脚本语法类似于C语言，它使用了三种数据类型：整数(integers)、字符串（strings）和关联数组（associative Arrays）。它有与C语言一样的控制结构。Systemtap脚本语法详细内容请参考《Systemtap tutorial》。
+
+Systemtap脚本由探测点(probe)和探测输出函数组成。每个Systemtap脚本至少定义一个探测点。函数是探测点的处理例程。
+#!/usr/bin/env stap    #Systemtap脚本的标志
+#
+# 显示在最后5秒内调用最后10个系统调用
+display the top 10 syscalls called in last 5 seconds
+#
+global syscalls          #定义全局变量
+function print_top () {  #定义函数
+        cnt=0            #局部变量
+        log ("SYSCALL\t\t\t\tCOUNT")      #打印表头标题“SYSCALL COUNT”
+        foreach ([name] in syscalls-) {   #查询每个系统调用的计数值
+                printf("%-20s\t\t%5d\n",name, syscalls[name])  #按格式打印
+                if (cnt++ == 10)
+                        break
+        }
+        printf("--------------------------------------\n")
+        delete syscalls                 #删除全局变量
+}
+probe syscall.* {       #在系统调用探测点
+        syscalls[probefunc()]++      #系统调用计数
+}
+probe timer.ms(5000) {
+        print_top ()       #调用函数
+}
+
+kdb内核调试器 
+
+Kdb（Kernel Debug）是SGI公司开发的遵循GPL的内建Linux内核调试工具。标准的Linux内核不包括kdb，需要从ftp://oss.sgi.com/www/projects/kdb/download/ix86 下载对应标准版本内核的kdb补丁，对标准内核打补丁，然后，编译打过补丁的内核代码。目前kdb支持包括x86(IA32)、IA64和MIPS在内的体系结构。
+
+Kdb调试器是Linux内核的一部分，提供了检查内存和数据结构的方法。通过附加命令，它可以格式化显示给定地址或ID的基本系统数据结构。kdb当前的命令集可以完全控制内核的操作，包括单步运行一个处理器、在指定的指令执行处理暂停、在访问或修改指定虚拟内存的位置暂停、在输入-输出地址空间对一个寄存器访问处暂停、通过进程ID跟踪任务、指令反汇编等。
+安装kdb 
+
+标准内核不包含kdb，因此，用户需要先下载kdb补丁，如：kdb-v4.4-2.6.24-x86-2.bz2，接着，应打补丁、配置、编译和安装内核。
+
+（1）打补丁
+
+下载和解压缩补丁，将补丁打进标准内核中。方法如下：
+$ upzip kdb-v4.4-2.6.24-x86-2.bz2
+$cp kdb-v4.4-2.6.24-x86-2  linux-2.6.24/
+$ cd linux-2.6.24
+$ patch -p1 < kdb-v4.4-2.6.24-x86-2.bz
+$ make xconfig
+
+
+（2）配置新内核
+
+运行make xconfig，在配置界面上选择CONFIG_KDB选项，为了更好地调试，建议用户从配置界面上选择CONFIG_FRAME_POINTER选项，尽管该选项使用了格外的寄存器并产生稍慢一些的内核。
+
+（3）编译与安装新内核
+
+按下面步骤重新编译和安装新内核：
+#make   
+#make install  
+#make modules_install
+使用kdb调试命令 
+
+运行支持kdb的内核后，在控制台上按下 Pause（或 Break）键将启动调试。当内核发生 oop或到达某个断点时，也会启动 kdb。kdb提示符如下所示：
+
+Entering kdb (current=0xc03b0000,pid 0)on processor 0 due to Keyboard Entry
+
+[0]kdb>
+
+在kdb提示符下，用户可以输入kdb命令，详细的kdb命令使用说明请参考man kdb文档，一些常见的命令说明如表1.
+
+表1 常见kdb命令说明命令	命令说明
+'	命令可以用于显示所有kdb命令。
+bp	设置或显示一个断点。
+bph	设置一个硬件断点。
+bc	清除一个断点。
+bl	列出所有当前断点。
+bt	显示当前进程的堆栈跟踪情况。
+go	退出调试器并重启内核运行。
+Id	反汇编指令。
+md	显示指定地址内容。
+mds	以符号形式显示内存。
+mm	修改内存。
+reboot	立即重启机器。
+rd	显示寄存器内容。
+ss	单步执行（一次一条指令）。
+ssb	单步执行CPU直到到达一分支。
+
+
+下面以调试scull驱动程序为例简单说明kdb的使用方法：
+
+假定scull驱动程序内核模块已装载入内核，先在驱动程序的函数scull_read 中设置一个断点，方法如下：
+
+[1]kdb> bp scull_read
+
+Instruction(i) BP #0 at 0xc8833514 (scull_read) is enabled on cpu 1
+
+[1]kdb> go
+
+　　命令bp在函数scull_read 开始处设置了一个断点，接着，命令go退出调试器，重启内核运行。内核下一次进入函数scull_read 时暂停运行。产生如下的状态：
+Entering kdb (0xc3108000) on processor 0 due to Breakpoint @ 0xc8833515 
+Instruction(i) breakpoint #0 at 0xc8833514 
+scull_read+0x1:   movl   %esp,%ebp 
+[0]kdb>
+
+
+　　kdb当前scull_read断点位置。可用命令bt查看堆栈跟踪记录，检查函数调用层次树，方法如下：
+[0]kdb> bt 
+   EBP       EIP         Function(args) 
+0xc3109c5c 0xc8833515  scull_read+0x1 
+0xc3109fbc 0xfc458b10  scull_read+0x33c255fc( 0x3, 0x803ad78, 0x1000, 
+0x1000, 0x804ad78) 
+0xbffffc88 0xc010bec0  system_call 
+[0]kdb>
+
+
+再可用命令mds显示指定内存的数据，如：查询 scull_devices 指针的值方法如下：
+
+[0]kdb> mds scull_devices 1
+
+c8836104: c4c125c0 ....
+
+上面命令查看指针scull_devices所指位置的一个双字（4个字节）数据，表示设备结构数组的起始地址为c4c125c0。再用mds查看设备结构的数据，方法如下：
+
+[0]kdb> mds c4c125c0
+
+c4c125c0: c3785000 ....
+
+c4c125c4: 00000000 ....
+
+c4c125c8: 00000fa0 ....
+
+c4c125cc: 000003e8 ....
+
+c4c125d0: 0000009a ....
+
+c4c125d4: 00000000 ....
+
+c4c125d8: 00000000 ....
+
+c4c125dc: 00000001 ....
+
+　　上面8行分别对应结构Scull_Dev的8个成员。再与数据结构Scull_Dev的定义相对照，可知这8个数据的含义。
+
+还可以使用命令mm修改数据。例如：将结构Scull_Dev的某一成员值设置为0x50，方法如下：
+
+[0]kdb> mm c4c125d0 0x50
+
+0xc4c125d0 = 0x50
+kgdb 
+kgdb调试原理 
+
+调试器GNU gdb主要用于调试用户级程序，通过串口线或网络将两台计算机以主机/目标机（host machine/target machine）方式连接时，gdb还可用于调试linux内核。这种方式需要给内核打进包含kgdb驱动程序在内的补丁。
+
+kgdb是Linux内核的源代码级调试器，与gdb配合使用可以调试Linux内核。在Linux内核的kgdb配合下，内核开发者可以用类似于调试应用程序的方式通过gdb调试内核，可以方便以使用gdb的命令在内核代码放置断点、单步调试内核和观察内核变量值等。
+
+kgdb进行源码级内核调试的原理图如图1所示。在两台计算中机，一台用作开发计算机，称为主机或开发机；一台用作测试计算机，称为目标机或测试机。两台计算机可通过串行线或以太网进行通信。内核在测试机上调试，gdb在开发机上运行，gdb通过串行线用null modem与调试的内核通信。两台计算机也可以使用一台计算机上的两个虚拟机进行替代。
+
+
+
+图1 kgdb进行源码级内核调试原理图
+
+目前，kgdb支持i386, x86_64, ppc, arm, mips和ia64等处理器构架，开发机和测试机可用串行线或以太网进行连接通信。
+
+kgdb补丁将下面的内容加入到内核代码中：
+
+●gdb stub - gdb stub（"树桩"）是调试器的核心，它处理来自开发机上gdb的请求。当测试机运行了帯有kgdb的内核时，gdb stub控制测试机中所有的处理器。
+
+●对出错处理例程的修改- 当一个不期望的错误发生时，内核将控制传递给kgdb调试器。不含有kgdb的内核在出现不可预测错误时会崩溃（panic），通过对出错处理的修改，kgdb允许开发者分析不可预测的出错。
+
+●串行通信-该部件通过内核的串行驱动程序，为内核中的stub提供接口，负责在串行连接线上发送和接收数据，还负责处理开发机上gdb发送的处理控制断点请求。
+建立kdbg联机调试的方法 
+
+下面说明建立kdbg联机调试的步骤：
+
+（1）软件建立和应用kgdb补丁
+
+1）下载Linux内核源代码：linux-2.6.15.5.tar.bz2。
+
+2）下载与内核版本对应的kgdb补丁：linux-2.6.15.5-kgdb-2.4.tar.bz2。
+
+3）解压缩软件包，方法如下：
+
+cd ${BASE_DIR}
+
+tar -jxvf linux-2.6.15.5.tar.bz2
+
+cd ${BASE_DIR}/linux-2.6.15.5
+
+tar -jxvf linux-2.6.15.5-kgdb-2.4.tar.bz2
+
+在${BASE_DIR}/linux-2.6.15.5目录中，给Linux内核打kgdb补丁，方法如下：
+
+patch -p1 < ${BASE_DIR}/linux-2.6.15.5-kgdb-2.4/core-lite.patch
+
+patch -p1 < ${BASE_DIR}/linux-2.6.15.5-kgdb-2.4/i386.patch
+
+（2）在开发机上编译内核
+
+1）在${BASE_DIR}/linux-2.6.15.5/Makefile，设置EXTRAVERSION = -kgdb。
+
+2）运行命令make xconfig或make oldconfig，出现如图2所示的内核配置界面。在配置界面中，为目标机硬件选择合适的选项；在"Kernel hacking"条目下，选择kgdb的选项。
+
+
+
+图2 在Linux内核配置界面中与kgdb相关的配置选项
+
+3）运行make bzImage编译内核。
+
+4）将编译的内核从开发机上传送到目标机上，拷贝内核映像${BASE_DIR}/linux-2.6.15.5/arch/i386/boot/bzImage到目标机/boot/vmlinuz-2.6.15.5-kgdb。然后，再拷贝映射文件${BASE_DIR}/linux-2.6.15.5/System.map到目标机/boot/System.map-2.6.15.5-kgdb。再如下建立符号链接：
+
+ln -s /boot/vmlinuz-2.6.15.5-kgdb /boot/vmlinuz
+
+ln -s /boot/System.map-2.6.15.5-kgdb /boot/System.map
+
+5）在目标机上编辑文件/boot/grub/grub.conf， 在该文件加入含有kgdb的内核条目，方法如下：
+
+title Linux-2.6.15.5-kgdb
+
+root (hd0,0)
+
+kernel /boot/vmlinuz-2.6.15.5-kgdb ro root=/dev/hda1 kgdbwait
+
+（3）在开发机上开始调试会话
+
+1）在启动目标机后，它将等待开发机连接，显示下面的消息：
+
+Waiting for connection from remote gdb...
+
+2）用命令cd ${BASE_DIR}/linux-2.6.15.5进入目录linux-2.6.15.5目录。
+
+3）用root用户登录设置调试会话波特率，方法如下：
+
+<root#> gdb ./vmlinux
+
+(gdb) set remotebaud 115200
+
+(gdb) target remote /dev/ttyS0
+
+Remote debugging using /dev/ttyS0
+
+breakpoint () at kernel/kgdb.c:1212
+
+1212 atomic_set(&kgdb_setting_breakpoint, 0);
+
+warning: shared library handler failed to enable breakpoint
+
+(gdb)
+
+4）在开发机上输入调试命令
+
+此时，gdb已连接到目标机上的内核，目标机上的内核正等待接收命令进行测试。输入命令(gdb) c（表示继续运行）时，目标机系统正常启动，在配置内核时，如果开发机选择了通过gdb输出控制台消息，则控制台log消息会从gdb上显示。
+
+由gdb连接到测试内核，如果测试内核发生内核崩溃（kernel panic），它将首先将控制权转移给gdb，以让gdb分析崩溃原因。
+
+（4）使用kgdb以太网接口
+
+kgdb还可能通过以太网接口调试内核，用以太网接口建立连接的步骤说明如下：
+
+1）添加下面的行到grub条目中：
+kgdboe=@10.0.0.6/,@10.0.0.3/ (that's kgdboe=@LOCAL-IP/,@REMOTE-IP/)
+# Sample grub.conf which will by default boot the kgdb enabled kernel
+title Linux-2.6.15.5-kgdb(eth)
+root (hd0,0)
+kernel /boot/vmlinuz-2.6.15.5-kgdb ro root=/dev/hda1 kgdboe=@10.0.0.6/,@10.0.0.3/
+console=ttyS0,115200
+
+
+2）接着在gdb中用下面的命令开始调试会话：
+
+(gdb) ./vmlinux
+
+(gdb) target remote udp:HOSTNAME:6443
+调试内核模块 
+
+内核可加载模块的调试具有其特殊性，内核模块中各段的地址在模块加载进内核后才最终确定的，开发机的gdb无法得到各种符号地址信息。因此，用户需要使用特殊版本的gdb，可以检测到内核模块的装载和卸载。另外，还需要将内核模块的符号装载到gdb中，这样，gdb才能解析到符号。
+
+（1）准备检测内核模块装载和卸载代码的gdb派生版本
+
+此步骤在开发机上完成。
+
+安装在开发机上的gdb应含有内核模块调试特征，用户需要安装含有检测内核模块装载和卸载代码的gdb派生版本，该版本gdb派生于标准的gdb。用户可以从网址http://kgdb.linsyssoft.com/downloads.htm下载gdb-6.4-kgdb-2.4.tar.bz2，然后，编译安装生成gdb派生版本。或者下载gdbmod-2.4.bz2，解压缩后得到可执行的gdb派生版本。
+
+在测试机上不需要特别的安装，内核模块可以出现在根文件系统或一个ramdisk中。
+
+（2）装载内核模块符号到gdb中
+
+此步骤在开发机上完成。
+
+在开发机上，用户应装载内核模块的符号到gdb，让gdb调试时可以解析到二进制代码对应的符号。
+
+首先，内核模块编译时应打开调试信息。然后，用下面方法设置内核、调试接口和定位内核模块位置：
+#cd /usr/src/linux 2.6.13 
+#gdbmod 2.4 vmlinux 
+(gdb) target remote /dev/ttyS0
+Remote debugging using /dev/ttyS0
+breakpoint () at gdbstub.c:1153
+1153 }
+(gdb)set solib search path /usr/linux 2.6.13/drivers/net
+
+
+一旦kgdb通知一个内核模块装载时，gdb必须能定位模块文件。因此，用户需要用命令"set solib-search-path"设置内核模块文件所在的路径。
+
+（3）插入内核模块到内核
+
+插入内核模块到内核，方法 如下：
+# insmod mymodule.ko
+
+
+到此，已装载了内核模块符号，内核模块可以像正常的内核代码一样调试了。
+
+样例：调试内核模块test
+
+1）编写内核模块
+
+首先，在开发机上编写简单的内核模块test，代码如下：
+void test_func()
+{
+    printk("test_func\n");
+    printk("aaaaaaaaaaa\n");
+}
+ 
+int test_init()
+{
+    printk("test_init_module\n");
+ 
+    return 0;
+}
+ 
+void test_exit()
+{
+    printk("test_cleanup_module\n");
+}
+ 
+module_init(test_init);
+module_exit(test_exit);
+
+
+2）编译安装内核模块
+
+接着，编译内核模块，并将内核模块拷贝到测试机上。方法如下：
+#cd /root/mymodule
+#gcc -D__KERNEL__ -DMODULE -I/usr/src/linux-2.6.15/kernel/include -O -Wall -g -c -o test.ko test.c
+#scp test.ko root@192.168.1.130:/root
+
+3）开始调试
+
+装载内核符号到gdb中，设置内核模块所在路径，方法如下：
+# gdbmod vmlinux
+ (gdb) set solib-search-path /root/mymodule
+
+
+执行命令rmt，进入测试机调试，方法如下：
+(gdb) rmt
+breakpoint () at kgdbstub.c:1005
+1005                    atomic_set(&kgdb_setting_breakpoint, 0);
+
+
+在内核模块初始化处设置断点。查内核源码可知，内核模块初始化函数init在module.c文件函数sys_init_module函数中的mod->init处调用，对应行号为2168（根据不同版本的内核，行号可能不同）。设置断点方法如下：
+(gdb) b module.c:2168
+Breakpoint 1 at 0xc011cd83: file module.c, line 2168.
+
+
+让测试机上的内核继续运行，方法如下：
+(gdb) c
+Continuing.
+[New Thread 1352]
+[Switching to Thread 1352]
+
+
+测试机用命令"insmod test.ko"执行插入内核模块操作时，开发机会在断点处被暂停，暂停时显示如下
+Breakpoint 1, sys_init_module (name_user=0xc03401bc "\001",
+mod_user=0x80904d8) at module.c:2168
+2168             ret = mod->init();
+
+
+用step命令进入内核模块test的函数init，方法如下：
+(gdb) step
+test_init () at test.c:12
+12              printk("test_init_module\n");
+(gdb) n
+15      }
+(gdb)
+
+
+对内核模块的非init函数调试时，由于测试机上已插入模块，模块的符号也已加载，只需要直接需要调试的代码处设置断点。如：在函数test_func处设置断点的方法如下：
+
+(gdb)bt test_func
+调试内核 
+
+用gdb调试内核类型于调试应用程序进程，kgdb支持gdb的执行控制命令、栈跟踪和线程分析等。但kgdb不支持watchpoint，kgdb通过gdb宏来执行watchpoint。
+
+调试内核的命令说明如下：
+
+（1）停止内核执行
+
+用户在gdb终端中按下Ctrl + C键，gdb将发送停止消息给kgdb stub，kgdb stub控制内核的运行，并与gdb通信。
+
+（2）继续内核运行
+
+gdb命令"(gdb) c"告诉kgdb stub继续内核运行，直到遇到一个断点，或者gdb执行Ctrl + C，或其他原因，内核运行才停顿下来。
+
+（3）断点
+
+gdb断点（Breakpoints）用于在一个函数或代码行处暂停内核运行，设置断点命令如："(gdb) b module.c:2168"。
+
+（4）进入代码
+
+使用命令"(gdb) step"进入一个函数或在暂停后执行下一个程序行；使用命令"(gdb) next"跳过一个函数执行下一个程序行或暂停后执行下一个程序；
+
+（5）栈跟踪（Stack Trace）
+
+使用命令"(gdb) bt"或"(gdb) backtrace"显示程序栈，它显示了调用函数的层次列表，表明了函数的调用函数。该命令还打印调解函数的参数值。
+
+例如，运行命令backtrace的样例列出如下：
+(gdb) backtrace
+#0 breakpoint () at gdbstub.c:1160
+#1 0xc0188b6c in gdb_interrupt (irq=3, dev_id=0x0, regs=0xc02c9f9c) at gdbserial.c:143
+#2 0xc0108809 in handle_IRQ_event (irq=3, regs=0xc02c9f9c, action=0xc12fd200)3 0xc0108a0d in do_IRQ (regs={ebx = 1072672288, ecx = 0, edx = 1070825472, esi = 1070825472, edi = 1072672288, ebp = 1070817328, eax = 0, xds = 1072693224, xes = 1072693224, orig_eax = 253, eip = 1072672241, xcs = 16, eflags = 582, esp = 1070817308, xss = 1072672126}) at irq.c:621
+#4 0xc0106e04 in ret_from_intr () at af_packet.c:1878
+#5 0xc0105282 in cpu_idle () at process.c:135
+#6 0xc02ca91f in start_kernel () at init/main.c:599
+#7 0xc01001cf in L6 () at af_packet.c:1878
+Cannot access memory at address 0x8e000
+
+
+除非栈帧数作为命令backtrace的参数外，gdb仅在栈跟踪走出了可访问地址空间时才停止打印栈的信息。上面例子中，函数调用层次次序从上到下为：ret_from_intr, do_IRQ, handle_IRQ_event, gdb_interrupt。
+
+放置一个断点在函数ext2_readlink，并访问一个符号链接，以便运行到该断点。 设置断点方法如下：
+(gdb) br ext2_readlink
+Breakpoint 2 at 0xc0158a05: file symlink.c, line 25.
+(gdb) c
+Continuing.
+
+
+在测试机上运行命令"ls -l /boot/vmlinuz"显示一个符号链接。在测试机上，内核会运行到上述断点处，并暂停。然后，将断点信息传回开发机。在开发机上，用户可以查看栈或运行其他调试命令。例如：运行栈跟踪命令，显示的结果列出如下：
+Breakpoint 2, ext2_readlink (dentry=0xc763c6c0, buffer=0xbfffed84 "\214\005",buflen=4096) at symlink.c:25 25 char *s = (char *)dentry >d_inode >u.ext2_i.i_data; 
+(gdb) bt
+#0 ext2_readlink (dentry=0xc763c6c0, buffer=0xbfffed84 "\214\005",buflen=4096) at symlink.c:25
+#1 0xc013b027 in sys_readlink (path=0xbfffff77 "/boot/vmlinuz", buf=0xbfffed84 "\214\005", bufsiz=4096) at stat.c:262
+#2 0xc0106d83 in system_call () at af_packet.c:1878
+#3 0x804aec8 in ?? () at af_packet.c:1878
+#4 0x8049697 in ?? () at af_packet.c:1878
+#5 0x400349cb in ?? () at af_packet.c:1878
+
+
+上述栈跟踪中，gdb打印一些无效的栈帧（#3~#5），这是因为gdb不知道在哪里停止栈跟踪，可以忽略这些无效的栈帧。
+
+系统调用readlink在函数system_call进入内核，该函数显示在af_packet.c中，这是不对的，因为对于汇编语言文件的函数，gdb不能指出正常的代码行。但gdb可以正确处理在C语言文件中内联汇编代码。更多的调用层次是：sys_readlink和ext2_readlink。
+
+在调试完后，用户可用"删除"命令和"继续"命令删除断点，并继续内核的运行，方法如下：
+(gdb) delete
+Delete all breakpoints? (y or n) y
+(gdb) c
+Continuing.
+
+
+（6）内联函数
+
+使用gdb栈跟踪命令通常足够找出一个函数的调用层次关系。但当其中一个栈帧在扩展的内联函数中，或者从一个内联函数访问另一个内联函数时，栈跟踪命令是不够用的，栈跟踪仅显示在内联函数中的源代码文件名和语句的行号，通过查看外面的函数，这可能知道调用的内联函数，但如果调用了两次内联函数，它就不知道是哪个内联函数了。
+
+下面的处理流程可用来找出内联函数信息：
+
+在栈跟踪中，gdb还与函数名一起显示代码地址，在调用了一个内联函数的语句中，gdb显示了这些代码调用和被调用的地址。脚本disasfun.sh可用来反汇编，源代码从vmlinux文件引用一个内核函数。文件vmlinux含有内核函数的绝对地址，因此，在汇编代码中看见的地址是在内存中的地址。
+
+下面是一个样例。
+
+配置内核时，kgdb应打开线程分析（CONFIG_KGDB_THREAD），gdb应连接到目标内核。
+
+用"Ctrl+C"中断内核，放置一个断点在函数__down处，并继续运行，方法如下：
+Program received signal SIGTRAP, Trace/breakpoint trap.
+breakpoint () at gdbstub.c:1160
+1160    }
+(gdb) break __down
+Breakpoint 1 at 0xc0105a43: file semaphore.c, line 62.
+(gdb) c
+Continuing.
+
+
+为了让程序运行到断点处，在目标机上运行"man lilo"。程序会运行到断点，gdb会进入命令行模式。输入栈跟踪命令，显示如下：
+Breakpoint 1, __down (sem=0xc7393f90) at semaphore.c:62
+62              add_wait_queue_exclusive(&sem->wait, &wait);
+(gdb) backtrace
+#0  __down (sem=0xc7393f90) at semaphore.c:62
+#1  0xc0105c70 in __down_failed () at af_packet.c:1878
+#2  0xc011433b in do_fork (clone_flags=16657, stack_start=3221199556,
+     regs=0xc7393fc4, stack_size=0)
+     at /mnt/work/build/old-pc/linux-2.4.6-kgdb/include/asm/semaphore.h:120
+#3  0xc010594b in sys_vfork (regs={ebx = 1074823660, ecx = 1074180970,
+      edx = 1074823660, esi = -1073767732, edi = 134744856, ebp = -1073767712,
+      eax = 190, xds = 43, xes = 43, orig_eax = 190, eip = 1074437320,
+      xcs = 35, eflags = 518, esp = -1073767740, xss = 43}) at process.c:719
+
+
+在函数sys_vfork中行号显示为719，这与文件process.c中的行号一致，查看该文件可得到确认，方法如下：
+(gdb) list process.c:719
+714      * do not have enough call-clobbered registers to hold all
+715      * the information you need.
+716      */
+717     asmlinkage int sys_vfork(struct pt_regs regs)
+718     {
+719             return do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD, regs.esp, &regs, 0);
+720     }
+721
+722     /*
+723      * sys_execve() executes a new program.
+
+
+就像gdb显示的一样，函数sys_vfork调用函数do_fork，再看栈跟踪显示的第2帧，gdb显示它在文件semaphore.h中的行号是120，显示的行号虽然没有用但是正确的。查看该文件可得到确认，方法如下：
+(gdb) list semaphore.h:118
+113      */
+114     static inline void down(struct semaphore * sem)
+115     {
+116     #if WAITQUEUE_DEBUG
+117             CHECK_MAGIC(sem->__magic);
+118     #endif
+119
+120             __asm__ __volatile__(                                              <-----
+121                     "# atomic down operation\n\t"
+122                     LOCK "decl %0\n\t"     /* --sem->count */
+
+上述代码中，在箭头所指示语句处，得到的信息仅是它在do_fork的一个扩展的内联函数down中。gdb还打印了在do_fork中从下一个被调用的函数开始代码的绝对地址：0xc011433b。这里我们用脚本disasfun找出该地址所对应的代码行。命令"disasfun vmlinux do_fork"输出的部分结果显示如下：
+if ((clone_flags & CLONE_VFORK) && (retval > 0))
+c011431d:       8b 7d 08                mov    0x8(%ebp),%edi
+c0114320:       f7 c7 00 40 00 00       test   $0x4000,%edi
+c0114326:       74 13                   je     c011433b <do_fork+0x707>
+c0114328:       83 7d d4 00             cmpl   $0x0,0xffffffd4(%ebp)
+c011432c:       7e 0d                   jle    c011433b <do_fork+0x707>
+#if WAITQUEUE_DEBUG
+CHECK_MAGIC(sem->__magic);
+#endif
+        __asm__ __volatile__(
+c011432e:       8b 4d d0                mov    0xffffffd0(%ebp),%ecx
+c0114331:       f0 ff 4d ec             lock decl 0xffffffec(%ebp)
+c0114335:       0f 88 68 95 13 00       js     c024d8a3 <stext_lock+0x7bf>
+                down(&sem);
+        return retval;
+c011433b:       8b 45 d4                mov    
+0xffffffd4(%ebp),%eax              <-----
+c011433e:       e9 8d 00 00 00          jmp    c01143d0 <do_fork+0x79c>
+Looking at the code in fork.c  we know where above code is:
+fork_out:
+if ((clone_flags & CLONE_VFORK) && (retval > 0))
+    down(&sem)
+
+
+（7）线程分析
+
+gdb具有分析应用程序线程的特征，它提供了应用程序创建的线程的列表，它允许开发者查看其中任何一个线程。gdb的特征可用来与kgdb一起查看内核线程。gdb能提供内核中所有线程的列表。开发者可指定一个线程进行分析。像backtrace，info regi这样的gdb命令接着可以显示指定线程上下文的信息。
+
+应用程序创建的所有线程分享同一地址空间，相似地，所有内核线程共享内核地址空间。每个内核线程的用户地址空间可能不同，因此，gdb线程可较好地分析内核代码和驻留在内核空间的数据结构。
+
+gdb info给出了关于gdb线程分析方面更多的信息。下面列出一个内核线程分析的样例：
+
+gdb命令"info threads"给出了内核线程的列表，显示如下：
+(gdb) info thr
+  21 thread 516  schedule_timeout (timeout=2147483647) at sched.c:411
+  20 thread 515  schedule_timeout (timeout=2147483647) at sched.c:411
+  19 thread 514  schedule_timeout (timeout=2147483647) at sched.c:411
+  18 thread 513  schedule_timeout (timeout=2147483647) at sched.c:411
+  17 thread 512  schedule_timeout (timeout=2147483647) at sched.c:411
+  16 thread 511  schedule_timeout (timeout=2147483647) at sched.c:411
+  15 thread 438  schedule_timeout (timeout=2147483647) at sched.c:411
+  14 thread 420  schedule_timeout (timeout=-1013981316) at sched.c:439
+  13 thread 406  schedule_timeout (timeout=-1013629060) at sched.c:439
+  12 thread 392  do_syslog (type=2, buf=0x804dc20 "run/utmp", len=4095)
+    at printk.c:182
+  11 thread 383  schedule_timeout (timeout=2147483647) at sched.c:411
+  10 thread 328  schedule_timeout (timeout=2147483647) at sched.c:411
+  9 thread 270  schedule_timeout (timeout=-1011908724) at sched.c:439
+  8 thread 8  interruptible_sleep_on (q=0xc02c8848) at sched.c:814
+  7 thread 6  schedule_timeout (timeout=-1055490112) at sched.c:439
+  6 thread 5  interruptible_sleep_on (q=0xc02b74b4) at sched.c:814
+  5 thread 4  kswapd (unused=0x0) at vmscan.c:736
+  4 thread 3  ksoftirqd (__bind_cpu=0x0) at softirq.c:387
+  3 thread 2  context_thread (startup=0xc02e93c8) at context.c:101
+  2 thread 1  schedule_timeout (timeout=-1055703292) at sched.c:439
+* 1 thread 0  breakpoint () at gdbstub.c:1159
+(gdb)
+
+
+如上所显示，gdb为每个线程设定在gdb中唯一的id，当gdb内部引用一个线程时，可以使用这个id。例如：线程7（PID 7）具有gdb id 8。为了分析内核线程8 ，我们指定线程9给gdb。gdb接着切换到该线程中，准备做更多的分析。
+
+下面是分析线程的命令显示：
+(gdb) thr 9
+[Switching to thread 9 (thread 270)]
+#0  schedule_timeout (timeout=-1011908724) at sched.c:439
+439             del_timer_sync(&timer);
+(gdb) bt
+#0  schedule_timeout (timeout=-1011908724) at sched.c:439
+#1  0xc0113f36 in interruptible_sleep_on_timeout (q=0xc11601f0, timeout=134)
+    at sched.c:824
+#2  0xc019e77c in rtl8139_thread (data=0xc1160000) at 8139too.c:1559
+#3  0xc010564b in kernel_thread (fn=0x70617773, arg=0x6361635f,
+    flags=1767859560) at process.c:491
+#4  0x19 in uhci_hcd_cleanup () at uhci.c:3052
+#5  0x313330 in ?? () at af_packet.c:1891
+Cannot access memory at address 0x31494350
+(gdb) info regi
+eax            0xc38fdf7c       -1013981316
+ecx            0x86     134
+edx            0xc0339f9c       -1070358628
+ebx            0x40f13  266003
+esp             0xc3af7f74       0xc3af7f74
+ebp            0xc3af7fa0       0xc3af7fa0
+esi            0xc3af7f8c       -1011908724
+edi            0xc3af7fbc       -1011908676
+eip            0xc011346d       0xc011346d
+eflags         0x86     134
+cs             0x10     16
+ss             0x18     24
+ds             0x18     24
+es             0x18     24
+fs             0xffff   65535
+gs             0xffff   65535
+fctrl          0x0      0
+fstat          0x0      0
+ftag           0x0      0
+fiseg          0x0      0
+fioff          0x0      0
+foseg          0x0      0
+fooff          0x0      0
+---Type <return> to continue, or q <return> to quit---
+fop            0x0      0
+(gdb) thr 7
+[Switching to thread 7 (thread 6)]
+#0  schedule_timeout (timeout=-1055490112) at sched.c:439
+439             del_timer_sync(&timer);
+(gdb) bt
+#0  schedule_timeout (timeout=-1055490112) at sched.c:439
+#1  0xc0137ef2 in kupdate (startup=0xc02e9408) at buffer.c:2826
+#2  0xc010564b in kernel_thread (fn=0xc3843a64, arg=0xc3843a68,
+    flags=3280222828) at process.c:491
+#3  0xc3843a60 in ?? ()
+Cannot access memory at address 0x1f4
+(gdb)
+
+
+用户可从http://sourceware.org/gdb/download/下载进程信息宏ps和psname，ps宏提供了运行在内核的线程的名字和ID。运行结果显示如下：
+(gdb) ps
+0 swapper
+1 init
+2 keventd
+3 ksoftirqd_C
+4 kswapd
+5 bdflush
+6 kupdated
+8 khubd
+270 eth0
+328 portmap
+383 syslogd
+392 klogd
+406 atd
+420 crond
+438 inetd
+511 mingetty
+512 mingetty
+513 mingetty
+514 mingetty
+515 mingetty
+516 mingetty
+(gdb) 
+The psname macro can be used to get name of a thread when it's id is known.
+(gdb) psname 8
+8 khubd
+(gdb) psname 7
+(gdb)
+ 
+（7）Watchpoints
+
+
+（7）Watchpoints
+
+kgdb stub使用x86处理器的调试特征支持硬件断点，这些断点不需要代码修改。它们使用调试寄存器。x86体系中的ia32处理器有4个硬件断点可用。每个硬件断点可以是下面三个类型之一：
+
+执行断点 当代码在断点地址执行时，触发执行断点。由于硬件断点有限，建议通过gdb break命令使用软件断点，除非可避免修改代码。
+
+写断点 当系统对在断点地址的内存位置进行写操作时，触发一个写断点。写断点可以放置可变长度的数据。写断点的长度指示为观察的数据类型长度，1表示为字节数据，2表示为2字节数据，3表示为4字节数据。
+
+访问断点 当系统读或写断点地址的内存时，触发一个访问断点。访问断点也有可变长度数据类型。
+
+ia-32处理器不支持IO断点。
+
+因为gdb stub目前不使用gdb用于硬件断点的协议，因此，它通过gdb宏访问硬件断点。硬件断点的gdb宏说明如下：
+
+1）hwebrk – 放置一个执行断点。
+
+用法：hwebrk breakpointno address
+
+2）hwwbrk – 放置一个写断点。
+
+用法：hwwbrk breakpointno length address
+
+3）hwabrk – 放置一个访问断点。
+
+用法：hwabrk breakpointno length address
+
+4）hwrmbrk – 删除一个断点
+
+用法：hwrmbrk breakpointno
+
+5）exinfo – 告诉是否有一个软件或硬件断点发生。如果硬件断点发生，打印硬件断点的序号。
+
+这些命令要求的参数说明如下：
+
+breakpointno – 0~3
+
+length - 1~3
+
+address - 16进制内存位置（没有0x），如：c015e9bc
+使用UML调试Linux内核 
+
+用户模式Linux（User Mode Linux，UML）不同于其他Linux虚拟化项目，UML尽量将它自己作为一个普通的程序。UML与其他虚拟化系统相比，优点说明如下：
+
+良好的速度
+
+UML编译成本地机器的代码，像主机上的其他已编译应用程序一样运行。它比在软件上应用整个硬件构架的虚拟机快得多。另一方面，UML不需要考虑依赖于特定CPU的虚拟化系统的硬件特异性。
+
+获益于Liunx更新
+
+每次Linux的改进，UML自动得到这些功能，虚拟化系统并不一定能从更新中获益。
+
+弹性编码
+
+内核需要与硬件或虚拟硬件交互，但UML可将交互看作其他方式。例如：可以将这些交互转换成共享的库，其他程序可以在使用时连接该库。它还可作为其他应用程序的子shell启动，能任何其他程序的stin/stdout使用。
+
+可移植性
+
+UML将来可以移植到x86 Windows, PowerPC Linux, x86 BSD或其他系统上运行。
+
+从Linux2.6.9版本起，用户模式Linux（User mode Linux,UML）已随Linux内核源代码一起发布，它存放于arch/um目录下。编译好UML的内核之后，可直接用gdb运行编译好的内核并进行调试。
+UML原理 
+
+用户模式Linux（User mode Linux,UML）将Linux内核的一部分作为用户空间的进程运行，称为客户机内核。UML运行在基于Linux系统调用接口所实现的虚拟机。UML运行的方式如图1所示。UML像其他应用程序一样与一个"真实"的Linux内核（称为"主机内核"）交互。应用程序还可运行在UML中，就像运行在一个正常的Linux内核下。
+
+ 
+
+
+图1 UML在Linux系统中运行的位置
+
+使用UML的优点列出如下：
+
+如果UML崩溃，主机内核还将运行完好。
+
+可以用非root用户运行UML。
+
+可以像正常进程一样调试UML。
+
+在不中断任何操作下与内核进行交互。
+
+用UML作为测试新应用程序的"沙箱"，用于测试可能有伤害的程序。
+
+可以用UML安全地开发内核。
+
+可以同时运行不同的发布版本。
+
+由于UML基于以Linux系统调用接口实现的虚拟机，UML无法访问主机的硬件设备。因此，UML不适合于调试与硬件相关的驱动程序。
+编译UML模式客户机Linux内核 
+
+（1）获取源代码
+
+从http://www.kernel.org/下载linux-2.6.24.tar.bz2，解压缩源代码，方法如下：
+
+host% bunzip2 linux-2.6.24.tar.bz2
+
+host% tar xf linux-2.6.24.tar
+
+host% cd linux-2.6.24
+
+（2）配置UML模式内核
+
+如果使用缺省配置，那么，方法如下：
+
+host% make defconfig ARCH=um
+
+如果运行配置界面，方法如下：
+
+host% make menuconfig ARCH=um
+
+如果不使用缺省配置defconfig，那么，内核编译将使用主机的配置文件，该配置文件在主机/boot目录下。对于UML模式内核来说，这是不对的，它将编译产生缺乏重要的驱动程序和不能启动的UML。
+
+以编译UML时，每个make命令应加上选项"ARCH=um"，或者设置环境变量"export ARCH=um"。
+
+当再次配置时，可以先运行下面的命令清除所有原来编译产生的影响：
+
+host% make mrproper
+
+host% make mrproper ARCH=um
+
+内核提供了配置选项用于内核调试，这些选项大部分在配置界面的kernel hacking菜单项中。一般需要选取CONFIG_DEBUG_INFO选项，以使编译的内核包含调试信息。
+
+（3）编译UML模式内核
+
+编译内核的方法如下：
+
+host% make ARCH=um
+
+当编译完成时，系统将产生名为"linux"的UML二进制。查看方法如下：
+
+host% ls -l linux
+
+-rwxrwxr-x 2 jdike jdike 18941274 Apr 7 15:18 linux
+
+由于UML加入了调试符号，UML模式内核变得很大，删除这些符号将会大大缩小内核的大小，变为与标准内核接近的UML二进制。
+
+现在，用户可以启动新的UML模式内核了。
+
+（4）UML的工具
+
+使用UML和管理UML的工具说明如下：
+
+UMLd – 用于创建UML实例、管理实例启动/关闭的后台程序。
+
+umlmgr –用于管理正运行的UML实例的前台工具程序。
+
+UML Builder – 编译根文件系统映像（用于UML模式操作系统安装）。
+
+uml switch2 用于后台传输的用户空间虚拟切换。
+
+VNUML – 基于XML的语言，定义和启动基于UML的虚拟网络场景。
+
+UMLazi – 配置和运行基于虚拟机的UML的管理工具。
+
+vmon – 运行和监管多个UML虚拟机的轻量级工具，用Python 书写。
+
+umvs – umvs是用C++和Bash脚本写的工具，用于管理UML实例。该应用程序的目的是简化UML的配置和管理。它使用了模板，使得编写不同的UML配置更容易。
+
+MLN - MLN (My Linux Network) 是一个perl程序，用于从配置文件创建UML系统的完整网络，使得虚拟网络的配置和管理更容易。MLN基于它的描述和简单的编程语言编译和配置文件系统模板，并用一种组织方式存储它们。它还产生每个虚拟主机的启动和停止脚本，在一个网络内启动和停止单个虚拟机。MLN可以一次使用几个独立的网络、项目，甚至还可以将它们连接在一起。
+
+Marionnet – 一个完全的虚拟网络实验，基于UML，带有用户友好的图形界面。
+运行UML 
+
+（1）启动UML
+
+为了运行UML实例，用户需要运行Linux操作系统主机和带有自己文件系统的UML客户机。用户可以从http://uml.nagafix.co.uk/下载UML（如：kernel）和客户机文件系统（如：root_fs），运行UML实例的方法如下：
+
+$ ./kernel ubda= root_fs mem=128M
+
+上述命令中，参数mem指定虚拟机的内存大小；参数ubda表示根文件系统root_fs作为虚拟机第一个块设备，虚拟机用/dev/udba表示虚拟机的第一个块设备，与Linux主机系统的第一个物理块设备/dev/sda类似。
+
+用户还可以自己创建虚拟块设备，例如：建立交换分区并在UML上使用它的方法如下：
+
+$ dd if=/dev/zero of=swap bs=1M count=128
+
+$ ./kernel ubda= root_fs ubdb=swap mem=128M
+
+上述命令，创建了128M的交换分区，作为第二个块设备ubdb，接着，启动UML模式内核，用ubdb作为它的交换分区。
+
+（2）登录
+
+预打包的文件系统有一个带有"root"密码的root帐户，还有一个带有"user"密码的user帐户。用户登录后可以进入虚拟机。预打包的文件系统已安装了各种命令和实用程序，用户还可容易地添加工具或程序。
+
+还有一些其他登录方法，说明如下：
+
+在虚拟终端上登录
+
+每个已配置（设备存在于/dev，并且/etc/inittab在上面运行了一个getty）的虚拟终端有它自己的xterm。.
+
+通过串行线登录
+
+在启动输出中，找到类似下面的一行：
+
+serial line 0 assigned pty /dev/ptyp1
+
+粘贴用户喜爱的终端程序到相应的tty，如：minicom，方法如下：
+
+host% minicom -o -p /dev/ttyp1
+
+通过网络登录
+
+如果网络正运行，用户可用telnet连接到虚拟机。
+
+虚拟机运行后，用户可像一般Linux一样运行各种shell命令和应用程序。
+建立串行线和控制台 
+
+可以粘附UML串行线和控制台到多个类型的主机I/O通道，通过命令行指定，用户可以粘附它们到主机ptys, ttys, 文件描述子和端口。常用连接方法说明如下：
+
+让UML控制台出现在不用的主机控制台上。
+
+将两个虚拟机连接在一起，一个粘到pty，另一个粘附到相应的tty。
+
+创建可从网络访问的虚拟，粘附虚拟机的控制台到主机的一个端口。
+
+（1）指定设备
+
+用选项"con"或"ssl"（分别代表控制台和串行线）指定设备。例如：如果用户想用3号控制台或10号串行线交互，命令行选项分别为"con3"和"ssl10"。
+
+例如：指定pty给每个串行线的样例选项列出如下：
+
+ssl=pty ssl0=tty:/dev/tty0 ssl1=tty:/dev/tty1
+
+（2）指定通道
+
+可以粘附UML设备到多个不同类型的通道，每个类型有不同的指定方法，分别说明如下：
+
+伪终端为：device=pty，pts终端为：device=pts
+
+UML分配空闲的主机伪终端给。用户可以通过粘附终端程序到相应的tty访问伪终端，方法如下：
+
+screen /dev/pts/n
+
+screen /dev/ttyxx
+
+minicom -o -p /dev/ttyxx #minicom似乎不能处理pts设备
+
+kermit #启动它，打开设备，然后连接设备
+
+终端为：device=tty:tty设备文件
+
+UML将粘附设备到指定的tty，例如：一个样例选项列出如下：
+
+con1=tty:/dev/tty3
+
+上面语句将粘附UML的控制台1到主机的/dev/tty3。如果用户指定的tty是tty/pty对的slave端，则相应的pty必须已打开。
+
+xterms为：device=xterm
+
+UML将运行一个xterm，并且将设备粘附到xterm。
+
+端口为：device=port:端口号
+
+上述选项将粘附UML设备到指定的主机端口。例如：粘附控制台1到主机的端口9000，方法如下：
+
+con1=port:9000
+
+粘附所有串行线到主机端口，方法如下：
+
+ssl=port:9000
+
+用户可以通过telnet到该端口来访问这些设备，每个激活的telnet会话得到不同的设备，如果有比粘附到端口的UML设备多的telnet连接到一个端口，格外的telnet会话将阻塞正存在的telnet断线，或直到其他设备变为激活（如：通过在/etc/inittab中设置激活）。
+
+已存在的文件描述子：device=文件描述子
+
+如果用户在UML命令行中建立了一个文件描述子，他可以粘附UML设备到文件描述子。这最常用于在指定所有其他控制台后将主控制台放回到stdin和stdout上。方法如下：
+
+con0=fd:0,fd:1 con=pts
+
+null设备：device=null
+
+与"none"选项相比，上述选项允许打开设备，但读将阻塞，并且写将成功，但数据会被丢掉。
+
+无设备：device=none
+
+上述选项将引起设备消失。如果你正使用devfs，设备将不出现在/dev下。如果设备出现，尝试打开它将返回错误-ENODEV。
+
+用户还可以指定不同的输入和输出通道给一个设备，最常用的用途是重粘附主控制到stdin和stdout。例如：一个样例选项列出如下：
+
+ssl3=tty:/dev/tty2,xterm
+
+上述诗句将引起在主机/dev/tty3上的串行线3接受输入，显示输出在xterm上。
+
+如果用户决定将主控制台从stdin/stdout移开，初始的启动输出将出现在用户正运行UML所在的终端。然而，一旦控制台驱动程序已初始化，启动及随后的输出将出现在控制台0所在的地方。
+建立网络 
+
+UML实例可以用网络访问主机、本地网络上的其他机器和网络的其他部分。新的辅助程序uml_net进行主机建立时需要root权限。
+
+当前UML虚拟机有5种传输类型用于与其他主机交换包，分别是：ethertap，TUN/TAP， Multicast，交换机后台（switch daemon），slip，slirp和pcap。
+
+TUN/TAP, ethertap, slip和slirp传输允许UML实例与主机交换包。它们可定向到主机或主机可扮作路由器提供对其他物理或虚拟机的访问。
+
+pcap传输是一个综合的仅读接口，用libpcap二进制从主机上的接口收集包并过滤包。这对于构建预配置的交通监管器或sniffer来说，是有用的。
+
+后台和多播传输提供了完全虚拟的网络络其他虚拟机器。该网络完全从物理网络断开，除非某一个虚拟机扮作网关。
+
+如何选择这些主机传输类型 '用户可根据用途进行选择，选择方法说明如下：
+
+ethertap – 如果用户想对主机网络进行访问，并且运行以2.2以前版本时，使用它。
+
+TUN/TAP – 如果用户想访问主机网络，可使用它。TUN/TAP 运行在2.4以后的版本，比ethertap 更有效率。TUN/TAP 传输还能使用预置的设备，避免对uml_net辅助程序进行setuid操作。
+
+Multicast – 如果用户期望建立一个纯虚拟网络，并且仅想建立UML，就使用它。
+
+交换机后台 – 如果用户想建立一个纯虚拟网络，并且不介意为了得到较好执行效率而建立后台，就使用它。
+
+slip – 没有特殊理由不要运行slip后端，除非ethertap和TUN/TAP不可用。
+
+slirp – 如果用户在主机上没有root权限对建立网络进行访问，或者如果用户不想分配对UML分配IP时，使用它。
+
+pcap – 对实际的网络连接没有太多用途，但用于主机上监管网络交通很有用。
+
+（1）网络建立通用步骤
+
+首先，用户必须已在UML中打开虚拟网络。如果运行下载的预编译的内核，则已打开虚拟网络。如果用户自己编译内核，则在配置界面上的"Network device support"菜单中，打开"Network device support"和三种传输选项。
+
+下一步是提供网络设备给虚拟机，通过在内核命令行中进行描述，格式如下：
+
+eth <n> = <transport> , <transport args>
+
+例如：一个虚拟以太网设备可以如下粘附到一个主机ethertap上：
+
+eth0=ethertap,tap0,fe:fd:0:0:0:1,192.168.0.254
+
+上述语句在虚拟机内部建立eth0，粘附它自己到主机/dev/tap0，指定一个以太网地址，并指定给主机tap0接口一个IP地址。
+
+一旦用户决定如何建立设备后，就可以启动UML、登录、配置设备的UML侧，并设置对外界的路由。此后，UML就可以与网络任何其他机器（物理或虚拟的）通信。
+
+（2）用户空间后台
+
+从http://www.user-mode-linux.org/cvs/tools/下载工具uml_net和uml_switch，编译并安装。uml_switch是在UML系统之间管理虚拟网络的后台，而不用连接到主机系统的网络。uml_switch将在UNIX域的socket上监听连接，并在连接到UNIX域的客户端之间转发包。
+
+（3）指定以太网地址
+
+TUN/TAP, ethertap和daemon接口允许用户给虚拟以太网设备指定硬件地址。但通常不需要指定硬件地址。如果命令行没有指定硬件地址，它将提供地址为fe:fd:nn:nn:nn:nn，其中，nn.nn.nn.nn是设备IP地址。这种方法通常足够保证有唯一的硬件地址。
+
+（4）UML接口建立
+
+一旦用命令行描述网络设备，用户在启动UML和登录后，第一件事应是建立接口，方法如下：
+
+UML# ifconfig ethn ip-address up
+
+此时，用户应可以ping通主机。为了能查看网络，用户设置缺省的路由为到达主机，方法如下：
+
+UML# route add default gw host ip
+
+例如：主机IP为192.168.0.4，设置路由方法如下：
+
+UML# route add default gw 192.168.0.4
+
+注意：如果UML不能与物理以太网上其他主机通信，可能是因为网络路由自动建立，可以运行"route –n"查看路由，结果类似如下：
+
+Destination Gateway Genmask Flags Metric Ref Use Iface
+
+192.168.0.0 0.0.0.0 255.255.255.0 U 0 0 0 eth0
+
+掩码不是255.255.255.255，因此，就使用到用户主机的路由替换它，方法如下：
+
+UML# route del -net 192.168.0.0 dev eth0 netmask 255.255.255.0
+
+UML# route add -host 192.168.0.4 dev eth0
+
+添加缺省的路由到主机，将允许UML与用户以太网上任何机器交换包。
+
+（5）多播
+
+在多个UML之间建立一个虚拟网络的最简单方法是使用多播传输。用户的系统必须在内核中打开多播（multicast），并且在主机上必须有一个多播能力的网络设备。通常它是eth0。
+
+为了使用多播，运行两个UML，命令行带有"eth0=mcast"选项。登录后，用户在每个虚拟机上用不同的IP地址配置以太网设备，方法如下：
+
+UML1# ifconfig eth0 192.168.0.254
+
+UML2# ifconfig eth0 192.168.0.253
+
+这两个虚拟机应能相互通信。
+
+传输设置的整个命令行选项列出如下：
+
+ethn=mcast,ethernet address,multicast address,multicast port,ttl
+
+（6）TUN/TAP和uml_net辅助程序
+
+TUN/TAP驱动程序实现了虚拟网卡的功能，TUN 表示虚拟的是点对点设备，TAP表示虚拟的是以太网设备，这两种设备针对网络包实施不同的封装。利用TUN/TAP驱动，可以将tcp/ip协议栈处理好的网络分包传给任何一个使用TUN/TAP驱动的进程，由进程重新处理后再发到物理链路中。
+
+TUN/TAP是与主机交换包的较好机制，主机建立TUN/TAP较简单的方法是使用uml_net辅助程序，它包括插入tun.o内核模块、配置设备、建立转发IP、路由和代理ARP。
+
+如果在设备的主机侧指定了IP地址，uml_net将在主机上做所有的建立工作。粘附设备到TUN/TAP设备的命令行格式列出如下：
+
+eth <n> =tuntap,,, <host IP address>
+
+例如：下面参数将粘附UML的eth0到下一个可用的tap设备，指定IP地址192.168.0.254么tap设备的主机侧，并指定一个基于IP地址的以太网地址。
+
+eth0=tuntap,,,192.168.0.254
+
+（7）带有预配置的tap设备的TUN/TAP
+
+如果用户没有更好的uml_net，可以预先建立TUN/TAP。步骤如下：
+
+用工具tunctl创建tap设备，方法如下：
+
+host# tunctl -u uid
+
+上述命令中，uid是用户的ID或UML将运行登录的用户名。
+
+配置设备IP地址，方法如下：
+
+host# ifconfig tap0 192.168.0.254 up
+
+建立路由和ARP，方法如下：
+
+host# bash -c 'echo 1 > /proc/sys/net/ipv4/ip_forward'
+
+host# route add -host 192.168.0.253 dev tap0
+
+host# bash -c 'echo 1 > /proc/sys/net/ipv4/conf/tap0/proxy_arp'
+
+host# arp -Ds 192.168.0.253 eth0 pub
+
+注意：这个配置没有重启机时失效，每次主机启动时，应重新设置它。最好的方法是用一个小应用程序，每次启动时，读出配置文件重新建立设置的配置。
+
+使用网桥
+
+为了不使用2个IP地址和ARP，还可通过对UML使用网桥提供对用户LAN直接访问，方法如下：
+
+host# brctl addbr br0
+
+host# ifconfig eth0 0.0.0.0 promisc up
+
+host# ifconfig tap0 0.0.0.0 promisc up
+
+host# ifconfig br0 192.168.0.1 netmask 255.255.255.0 up
+
+host# brctl stp br0 off
+
+host# brctl setfd br0 1
+
+host# brctl sethello br0 1
+
+host# brctl addif br0 eth0
+
+host# brctl addif br0 tap0
+
+注意：用户应该用eth0的IP地址通过ifconfig建立"br0"。
+
+运行UML
+
+一旦设备建立好后，运行UML，命令格式为： eth0=tuntap,devicename，例如：一个样例列出如下：
+
+eth0=tuntap,tap0
+
+如果用户不再使用tap设置，可以用下面命令删除它：
+
+host# tunctl -d tap device
+
+最后，tunctl有一个"-b"（用于简捷模式）切换，仅输出它所创建的tap设备的名字。它很适合于被一个脚本使用，方法如下：
+
+host# TAP=`tunctl -u 1000 -b`
+
+（8）交换机后台
+
+交换机后台uml_switch以前称为uml_router，它提供了创建整个虚拟网络的机制。缺省下，它不提供对主机网络的连接。
+
+首先，用户需要运行uml_switch，无参数运行时，表示它将监听缺省的unix域socket。使用选项"-unix socket"可指定不同的socket，"-hub"可将交换机后台变为集线器（Hub）。如果用户期望交换机后台连接到主机网络（允许UML访问通过主机访问外部的网络），可使用选项"-tap tap0"。
+
+uml_switch还可作为后台运行，方法如下：
+
+host% uml_switch [ options ] < /dev/null > /dev/null
+
+内核命令行交换机的通用命令行格式列出如下：
+
+ethn=daemon,ethernet address,socket type,socket
+
+通常只需要指定参数"daemon"，其他使用缺省参数，如果用户运行没有参数的交换机后台，在同一台机器上使用选项"eth0=daemon"运行UML，etho驱动程序会直接粘附它自己到交换机后台。参数socket为unix域socket的文件名，用于uml_switch和UML之间网络通信。
+
+（9）Slirp
+
+slirp通常使用外部程序/usr/bin/slirp，仅通过主机提供IP网络连接。它类似于防火墙的IP伪装，跃然传输有用户空间进行，而不是由内核进行。slirp不在主机上建立任何接口或改变路由。slirp在主机上不需要root权限或运行setuid。
+
+slirp命令行的通用格式为：
+
+ethn=slirp,ethernet address,slirp path
+
+在UML上，用户应使用没有网关IP的etho设置缺省路由，方法如下：
+
+UML# route add default dev eth0
+
+slirp提供了UML可使用的大量有用IP地址，如：10.0.2.3，是DNS服务器的一个别名，定义在主机/etc/resolv.conf中，或者它是slirp的选项"dns"中给定的IP地址。
+
+（10）pcap
+
+pcap对网络上传输的数据包进行截获和过滤。通过命令行或pcap传输粘附到UML以太网设备uml_mconsole工具，语法格式如下：
+
+ethn=pcap,host interface,filter expression,option1,option2
+
+其中，expression和option1、option2是可选的。
+
+这个接口是主机上用户想嗅探（sniff）的任何网络设备，过滤器表达式（filter expression）与工具tcpdump使用的一样，option1为"promisc"或"nopromisc"，控制pcap是否将主机接口设为"promiscuous"（混杂）模式；option2为"optimize "或"nooptimize"，表示是否使用pcap表达式优化器。
+
+一个设置pcap的样例列出如下：
+
+eth0=pcap,eth0,tcp
+
+eth1=pcap,eth0,!tcp
+
+上述语句将引起在主机eth0上的UML eth0将所有的tcp发出，并且在主机eth0上的UML eth1将发出所有非tcp包。
+
+（11）用户建立主机
+
+主机上的网络设备需要配置IP地址，还需要用值为1484的mtu配置tap设备。slip设置还需要配置点到点（pointopoint）地址，方法如下：
+
+host# ifconfig tap0 arp mtu 1484 192.168.0.251 up
+
+host# ifconfig sl0 192.168.0.251 pointopoint 192.168.0.250 up
+
+如果正建立tap设备，就将路由设置到UML IP。方法如下：
+
+UML# route add -host 192.168.0.250 gw 192.168.0.251
+
+为了允许网络上其他主机看见这个虚拟机，化理ARP设置如下：
+
+host# arp -Ds 192.168.0.250 eth0 pub
+
+最后，将主机设置到路由包，方法如下：
+
+host# echo 1 > /proc/sys/net/ipv4/ip_forward
+在虚拟机间共享文件系统 
+
+在虚拟机间共享文件系统的方法是使用ubd（UML Block Device）块设备驱动程序的写拷贝（copy-on-write，COW）分层能力实现。COW支持在仅读的共享设备上分层读写私有设备。一个虚拟机的写数据存储在它的私有设备上，而读来自任一请求块有效的设备。如果请求的块有效，读取私有设备，如果无效，就读取共享设备。
+
+用这种方法，数据大部分在多个虚拟机间共享，每个虚拟机有多个小文件用于存放虚拟机所做的修改。当大量UML从一个大的根文件系统启动时，这将节约大量磁盘空间。它还提供执行性能，因为主机可用较小的内存缓存共享数据，主机的内存而不是硬盘提供UML硬盘请求服务。
+
+可通过简单地加COW文件的名字到合适的ubd，实现加一个COW层到存在的块设备文件。方法如下：
+
+ubd0=root_fs_cow,root_fs_debian_22
+
+上述语句中，"root_fs_cow"是私有的COW文件，"root_fs_debian_22"是存在的共享文件系统。COW文件不必要存在，如果它不存在，驱动程序将创建并初始化它。一旦COW文件已初始化，可在以命令行中使用它，方法如下：
+
+ubd0=root_fs_cow
+
+后备文件（backing file）的名字存在COW文件头中，因此在命令行中继续指定它将是多余的。
+
+COW文件是稀疏的，因此它的长度不同于硬盘的实际使用长度。可以用命令"ls –ls"查看硬盘的实际消耗，用"ls –l"查看COW文件和后备文件（backing file）的长度，方法如下：
+
+host% ls -l cow.debian debian2.2
+
+-rw-r--r-- 1 jdike jdike 492504064 Aug 6 21:16 cow.debian
+
+-rwxrw-rw- 1 jdike jdike 537919488 Aug 6 20:42 debian2.2
+
+host% ls -ls cow.debian debian2.2
+
+880 -rw-r--r-- 1 jdike jdike 492504064 Aug 6 21:16 cow.debian
+
+525832 -rwxrw-rw- 1 jdike jdike 537919488 Aug 6 20:42 debian2.2
+
+从上述显示结构，用户会发现COW文件实际硬盘消耗小于1M，面不是492M。
+
+一旦文件系统用作一个COW文件的仅读后备文件，不要直接从它启动或修改它。这样，会使使用经的任何COW文件失效。后备文件在创建时它的修改时间mtime和大小size存放在COW文件头中，它们必须相匹配。如果不匹配，驱动程序将拒绝使用COW文件。
+
+如果用户手动地改变后备文件或COW头，将得到一个崩溃的文件系统。
+
+操作COW文件的方法说明如下：
+
+（1）删除后备文件
+
+由于UML存放后备文件名和它的修改时间mtime在COW头中，如果用户删除后文件文件，这些信息将变成无效的。因此，删除后备文件的步骤如下：
+
+用保护时间戳的方式删除文件。通常，使用"-p"选项。拷贝操作命令"cp –a"中的"-a"隐含了"-p"。
+
+通过启动UML更新COW头，命令行指定COW文件和新的后备文件的位置，方法如下：
+
+ubda=COW file,新的后备文件位置
+
+UML将注意到命令行和COW头之间的不匹配，检查新后文件路径的大小和修改时间mtime，并更新COW头。
+
+如果当用户删除后备文件时忘记保留时间戳，用户可手动整理mtime，方法如下：
+
+host% mtime=UML认定的修改时间mtime; \
+
+touch --date="`date -d 1970-01-01\ UTC\ $mtime\ seconds`" 后备文件
+
+注意如果对真正修改过而不是刚删除的后备文件进行上述操作，那么将会文件崩溃，用户将丢失文件系统。
+
+（2）uml_moo :将COW文件与它的后备文件融合
+
+依赖于用户如何使用UML和COW设备，系统可能建议每隔一段时间融合COW文件中的变化到后备文件中。用户可以用工具uml_moo完成该操作，方法如下：
+
+host% uml_moo COW file new backing file
+
+由于信息已在COW文件头中，因此，不必指定后备文件。
+
+uml_moo在缺省下创建一个新的后备文件，它还有一个破坏性的融合选项，直接将融合COW文件到它当前的后备文件。当后备文件仅有一个COW文件与它相关时，该选项很有用。如果多个COW与一个后备文件相关，融合选项"-d"将使所有其他的COW无效。但是，如果硬盘空间不够时，使用融合选项"-d"很方便快捷，方法如下：
+
+host% uml_moo -d COW file
+
+（3）uml_mkcow :创建新COW文件
+
+正常创建COW文件的方法是以UML命令行中指定一个不存在的COW文件，让UML创建COW文件。但是，用户有时想创建一个COW文件，但不想启动UML。此时，可以使用uml_mkcow工具。方法如下：
+
+host% uml_mkcow 新COW文件 存在的后备文件
+
+如果用户想销毁一个存在的COW文件，可以加"-f"选项强制重写旧的COW文件，方法如下：
+
+host% uml_mkcow -f 存在的COW文件 存在的后备文件
+创建UML的文件系统 
+
+如果根文件系统硬盘空间不够大，或者想使用不同于ext2的文件系统，用户就可能想创建和挂接新的UML文件系统，用户可以用如下方法创建UML的根文件系统：
+
+（1）创建文件系统的文件
+
+使用命令dd创建一个合适尺寸的空文件，用户可以创建稀疏文件，该文件直到实际使用时才分配硬盘空间。例如：下面的命令创建一个100M填满0的稀疏文件：
+
+host% dd if=/dev/zero of=new_filesystem seek=100 count=1 bs=1M
+
+（2）指定文件给一个UML设备
+
+在UML命令行上加入下面的选项：
+
+ubdd=new_filesystem
+
+上述命令中，ubdd应确保没被使用。
+
+（3）创建和挂接文件系统
+
+创建和挂接文件系统方法如下：
+
+host# mkreiserfs /dev/ubdd
+
+UML# mount /dev/ubdd /mnt
+主机文件访问 
+
+如果用户在UML中想访问主机上的文件，用户可将主机当作独立的机器，可以使用nfs从主机挂接目录，或者用scp和rcp拷贝文件到虚拟机，因为UML运行在主机上，它能象其他进程一样访问这些文件，并使它们在虚拟机内部可用，而不需要使用网络。
+
+还可以使用hostfs虚拟文件系统，用户通过它可以挂接一个主机目录到UML文件系统，并像在主机上一样访问该目录中的文件。
+
+（1）使用hostfs
+
+首先，确认虚拟机内部是否有hostfs可用，方法如下：
+
+UML# cat /proc/filesystems
+
+如果没有列出hostfs，则需要重编译内核，配置hostfs，将它编译成一个内核模块，并用"insmod"插入该内核模块。
+
+挂接hostfs文件系统，例如：将hostfs挂接到虚拟机的/mnt/host下，方法如下：
+
+UML# mount none /mnt/host -t hostfs
+
+如果用户不想挂接主机的root目录，他可以用"-o"选项指定挂接的子目录。例如：挂接主机的/home到虚拟机的/mnt/home，方法如下：
+
+UML# mount none /mnt/home -t hostfs -o /home
+
+（2）hostfs命令行选项
+
+在UML命令行选项可使用hostfs选项，用来指定多个hostfs挂接到一个主机目录或阻止hostfs用户从主机上销毁数据，方法如下：
+
+hostfs=directory,options
+
+当前可用的选项是"append"，用来阻止所有的文件在追加方式打开，并不允许删除文件。
+
+（3）hostfs作为根文件系统
+
+还可以通过hostfs从主机上的目录而不是在一个文件中的标准文件系统启动UML。最简单的方法是用loop挂接一个存在的root_fs文件，方法如下：
+
+host# mount root_fs uml_root_dir -o loop
+
+用户需要将/etc/fstab中的文件类型改变为"hostfs"，fstab中的该行列出如下：
+
+none / hostfs defaults 1 1
+
+接着用户可以用chown将目录中root拥有的所有文件改变为用户拥有，方法如下：
+
+host# find . -uid 0 -exec chown user {} \;
+
+如果用户不想用上面的命令改变文件属主，用户可以用root身份运行UML。
+
+接着，确保UML内核编译进hostfs，而不是以内核模块方式包含hostfs。那么，加入下面的命令行运行UML：
+
+root=/dev/root rootflags=/path/to/uml/root rootfstype=hostfs
+
+加入上述选项后，UML应该像正常的一样启动。
+
+（4）编译hostfs
+
+如果hostfs不在内核中，用户需要编译hostfs，用户可以将它编译进内核或内核模块。用户在内核配置界面上选项hostfs，并编译和安装内核。
+内核调试 
+
+因为UML运行为正常的Linux进程，用户可以用gdb像调试其他进程一样调试内核，稍微不同的是：因为内核的线程已用系统调用ptrace进行拦截跟踪，因此，gdb不能ptrace它们。UML已加入了解决此问题的机制。
+
+为了调试内核，用户需要从源代码编译，确保打开CONFIG_DEBUGSYM和CONFIG_PT_PROXY配置选项。它们分别用来确保编译内核带有"-g"选项和打开ptrace代理，以便gdb能与UML一起工作调试内核。
+
+（1）在gdb下启动内核
+
+用户可以在命令行中放入"debug"选项，在启动UML时将内核放在gdb的控制之下。用户可以得到一个运行gdb的xterm，内核将送一些命令到gdb，停在"start_kernel"处，用户可以输入"next", "step"或"cont"运行内核。
+
+（2）检查睡眠的进程
+
+并非每个bug在当前运行的进程中，有时候，当进程在信号量上或其他类似原因死锁时，原本不应该挂起的进程在内核中挂起。这种情况下，用户在gdb中用"Ctrl+C"时，得到一个跟踪栈，用户将可以看见到不相关的空闲线程。
+
+用户本想看到的是不应该睡眠的进程的栈，为了看到睡眠的进程，用户可以在主机上用命令ps得到该进程的主机进程id。
+
+用户将gdb与当前线程分离，方法如下：
+
+(UML gdb) det
+
+然后将gdb粘附到用户感兴趣的线程上，方法如下：
+
+(UML gdb) att <host pid>
+
+查看该线程的栈，方法如下：
+
+(UML gdb) bt
+
+（3）在UML上运行ddd
+
+ddd可以工作于UML，用户可以主机上运行ddd，它给gdb提供了图形界面。运行ddd的步骤如下：
+
+启动ddd，方法如下：
+
+host% ddd linux
+
+得到gdb的pid
+
+用命令ps可以得到ddd启动的gdb的pid。
+
+运行UML
+
+在运行UML的命令行中加上选项"debug=parent gdb-pid=<pid>"，启动并登录UML。
+
+在ddd的gdb命令行中输入"att 1"，gdb显示如下：
+
+0xa013dc51 in __kill ()
+
+(gdb)
+
+在gdb中输入"c"，UML将继续运行，用户可接着像调试其他进程一样调试了。
+
+（4）调试内核模块
+
+gdb已支持调试动态装载入进程的代码，这需要在UML下调试内核模块。调试内核模块有些复杂，用户需要告诉gdb装入UML的对象文件名以及它在内存中的位置。接着，它能读符号表，并从装载地址指出所有的符号。
+
+当用户在rmmod内核模块后重装载它时，可得到更多信息。用户必须告诉gdb忘记所有它的符号，包括主UML的符号，接着再装载回所有的符号。
+
+用户可以使用脚本umlgdb进行内核模块的重装载和读取它的符号表。用户还可以手动进行一步步处理完成符号表的获取工作。下面分别说明这两种方法。
+
+1）运行脚本umlgdb调试内核模块
+
+运行脚本umlgd较容易获取内核模块的符号表。
+
+首先，用户应告诉内核模块所在的位置，在脚本中有一个列表类似如下：
+
+set MODULE_PATHS {
+
+"fat" "/usr/src/uml/linux-2.6.18/fs/fat/fat.ko"
+
+"isofs" "/usr/src/uml/linux-2.6.18/fs/isofs/isofs.ko"
+
+"minix" "/usr/src/uml/linux-2.6.18/fs/minix/minix.ko"
+
+}
+
+用户将上述列表改为将调试的内核模块的路径，接着，从UML的顶层目录运行该脚本，显示如下：
+
+
+
+
+
+
+
+GDB pid is 21903 ********
+
+Start UML as: ./linux <kernel switches> debug gdb-pid=21903
+
+GNU gdb 5.0rh-5 Red Hat Linux 7.1
+
+Copyright 2001 Free Software Foundation, Inc.
+
+GDB is free software, covered by the GNU General Public License, and you are
+
+welcome to change it and/or distribute copies of it under certain conditions.
+
+Type "show copying" to see the conditions.
+
+There is absolutely no warranty for GDB. Type "show warranty" for details.
+
+This GDB was configured as "i386-redhat-linux"...
+
+(gdb) b sys_init_module
+
+Breakpoint 1 at 0xa0011923: file module.c, line 349.
+
+(gdb) att 1
+
+在用户运行UML后，用户只需要在"att 1"按回车，并继续执行它。方法如下：
+
+Attaching to program: /home/jdike/linux/2.4/um/./linux, process 1
+
+0xa00f4221 in __kill ()
+
+(UML gdb) c
+
+Continuing.
+
+此时，当用户用insmod插入内核模块，显示列出如下：
+
+
+Module hostfs loaded ***
+
+Breakpoint 1, sys_init_module (name_user=0x805abb0 "hostfs",
+
+mod_user=0x8070e00) at module.c:349
+
+349 char *name, *n_name, *name_tmp = NULL;
+
+(UML gdb) finish
+
+Run till exit from #0 sys_init_module (name_user=0x805abb0 "hostfs",
+
+mod_user=0x8070e00) at module.c:349
+
+0xa00e2e23 in execute_syscall (r=0xa8140284) at syscall_kern.c:411
+
+411 else res = EXECUTE_SYSCALL(syscall, regs);
+
+Value returned is $1 = 0
+
+(UML gdb)
+
+p/x (int)module_list + module_list->size_of_struct
+
+$2 = 0xa9021054
+
+(UML gdb) symbol-file ./linux
+
+Load new symbol table from "./linux" ' (y or n) y
+
+Reading symbols from ./linux...
+
+done.
+
+(UML gdb)
+
+add-symbol-file /home/jdike/linux/2.4/um/arch/um/fs/hostfs/hostfs.o 0xa9021054
+
+add symbol table from file "/home/jdike/linux/2.4/um/arch/um/fs/hostfs/hostfs.o" at
+
+.text_addr = 0xa9021054
+
+(y or n) y
+
+Reading symbols from /home/jdike/linux/2.4/um/arch/um/fs/hostfs/hostfs.o...
+
+done.
+
+(UML gdb) p *module_list
+
+$1 = {size_of_struct = 84, next = 0xa0178720, name = 0xa9022de0 "hostfs",
+
+size = 9016, uc = {usecount = {counter = 0}, pad = 0}, flags = 1,
+
+nsyms = 57, ndeps = 0, syms = 0xa9023170, deps = 0x0, refs = 0x0,
+
+init = 0xa90221f0 <init_hostfs>, cleanup = 0xa902222c <exit_hostfs>,
+
+ex_table_start = 0x0, ex_table_end = 0x0, persist_start = 0x0,
+
+persist_end = 0x0, can_unload = 0, runsize = 0, kallsyms_start = 0x0,
+
+kallsyms_end = 0x0,
+
+archdata_start = 0x1b855 <Address 0x1b855 out of bounds>,
+
+archdata_end = 0xe5890000 <Address 0xe5890000 out of bounds>,
+
+kernel_data = 0xf689c35d <Address 0xf689c35d out of bounds>}
+
+>> Finished loading symbols for hostfs ...
+
+（2）手动调试内核模块
+
+在调试器中启动内核，并用insmod或modprobe装载内核模块。在gdb中执行下面命令：
+
+(UML gdb) p module_list
+
+这是已装载进内核的内核模块列表，通常用户期望的内核模块在module_lis中。如果不在，就进入下一个链接，查看name域，直到找到用户调试的内核模块。获取该结构的地址，并加上module.size_of_struct值，gdb可帮助获取该值，方法如下：
+
+(UML gdb) printf "%#x\n", (int)module_list module_list->size_of_struct
+
+从内核模块开始处的偏移偶尔会改变，因此，应检查init和cleanup的地址，方法如下：
+
+(UML gdb) add-symbol-file /path/to/module/on/host that_address
+
+如果断点不在正确的位置或不工作等 ，用户可以查看内核模块结构，init和cleanup域应该类似如下：
+
+init = 0x588066b0 <init_hostfs>, cleanup = 0x588066c0 <exit_hostfs>
+
+如果名字正确，但它们有偏移，那么，用户应该将偏移加到add-symbol-file所在地址上。
+
+当用户想装载内核模块的新版本时，需要让gdb删除旧内核模块的所有符号。方法如下：
+
+(UML gdb) symbol-file
+
+接着，从内核二进制重装载符号，方法如下：
+
+(UML gdb) symbol-file /path/to/kernel
+
+然后，重复上面的装载符号过程。还需要重打开断点。
+
+（5）粘附gdb到内核
+
+如果用户还没有在gdb下运行内核，用户可以通过给跟踪线程发送一个SIGUSR1，用于以后粘附gdb到内核。控制台第一行的输出鉴别它的id，显示类似如下：
+
+tracing thread pid = 20093
+
+发送信号的方法如下：
+
+host% kill -USR1 20093
+
+上述命令运行后，用户将可看见带有gdb运行的xterm。
+
+如果用户已将mconsole（UML的控制台）编译进UML，那么可用mconsole客户端启动gdb，方法如下：
+
+(mconsole) (mconsole) config gdb=xterm
+
+上述命令运行后，用户将可看见带有gdb运行的xterm。
+
+（6）使用可替换的调试器
+
+UML支持粘附到一个已运行的调试器，而不是启动gdb本身。当gdb是一些UI的子进程（如：emacs或ddd）时，这将是有用的。它还被用于在UML上运行非gdb的调试器。下面是一个使用strace作为可替代调试器的例子。
+
+用户需要得到调试器的pid，并将pid用"gdb-pid=<pid>"选项与"debug"选项一起传递。
+
+如果用户在UI下使用gdb，那么，应告诉UML"att 1"，那么，UI将粘附到UML。
+
+下面以替换调试器strace为例，用户可以用strace调试实际的内核，方法如下：
+
+在shell中运行下述命令
+
+host%
+
+sh -c 'echo pid=$$; echo -n hit return; read x; exec strace -p 1 -o strace.out'
+
+用"debug"和"gdb-pid=<pid>"运行UML。
+
+strace输出将出现在输出文件中。
+
+注意：运行下面的命令，结果不同于前面命令。
+
+host% strace ./linux
+
+上述命令将仅strace主UML线程，跟踪的线程不做任何实际的内核操作。它仅标识出虚拟机。而使用上述的strce将显示虚拟机低层的活动情况。
+断言语句 
+
+在代码里面老能看到 BUG_ON() , WARN_ON() 这样的宏 ， 类似 我们日常编程里面的断言（assert） 。
+
+在include/asm-generic/bug.h
+#ifdef CONFIG_BUG
+ 
+#ifdef CONFIG_GENERIC_BUG
+#ifndef __ASSEMBLY__
+struct bug_entry {
+	unsigned long	bug_addr;
+#ifdef CONFIG_DEBUG_BUGVERBOSE
+	const char	*file;
+	unsigned short	line;
+#endif
+	unsigned short	flags;
+};
+#endif		/* __ASSEMBLY__ */
+ 
+#define BUGFLAG_WARNING	(1<<0)
+#endif	/* CONFIG_GENERIC_BUG */
+ 
+#ifndef HAVE_ARCH_BUG
+#define BUG() do { \
+	printk("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __FUNCTION__); \
+	panic("BUG!"); \
+} while (0)
+#endif
+ 
+#ifndef HAVE_ARCH_BUG_ON
+#define BUG_ON(condition) do { if (unlikely(condition� BUG(); } while(0)
+#endif
+ 
+#ifndef __WARN
+#ifndef __ASSEMBLY__
+extern void warn_on_slowpath(const char *file, const int line);
+#define WANT_WARN_ON_SLOWPATH
+#endif
+#define __WARN() warn_on_slowpath(__FILE__, __LINE__)
+#endif
+ 
+#ifndef WARN_ON
+#define WARN_ON(condition) ({						\
+	int __ret_warn_on = !!(condition);				\
+	if (unlikely(__ret_warn_on�					\
+		__WARN();						\
+	unlikely(__ret_warn_on);					\
+})
+#endif
+ 
+#else /* !CONFIG_BUG */
+#ifndef HAVE_ARCH_BUG
+#define BUG()
+#endif
+ 
+#ifndef HAVE_ARCH_BUG_ON
+#define BUG_ON(condition) do { if (condition) ; } while(0)
+#endif
+ 
+#ifndef HAVE_ARCH_WARN_ON
+#define WARN_ON(condition) ({						\
+	int __ret_warn_on = !!(condition);				\
+	unlikely(__ret_warn_on);					\
+})
+#endif
+#endif
+ 
+#define WARN_ON_ONCE(condition)	({				\
+	static int __warned;					\
+	int __ret_warn_once = !!(condition);			\
+								\
+	if (unlikely(__ret_warn_once�				\
+		if (WARN_ON(!__warned� 			\
+			__warned = 1;				\
+	unlikely(__ret_warn_once);				\
+})
+ 
+#ifdef CONFIG_SMP
+# define WARN_ON_SMP(x)			WARN_ON(x)
+#else
+# define WARN_ON_SMP(x)			do { } while (0)
+#endif
+
+同步锁调试 
+
+锁验证器
+
+内核锁验证器（Kernel lock validator）可以在死锁发生前检测到死锁，即使是很少发生的死锁。它将每个自旋锁与一个键值相关，相似的锁仅处理一次。加锁时，查看所有已获取的锁，并确信在其他上下文中没有已获取的锁，在新获取锁之后被获取。解锁时，确信正被解开的锁在已获取锁的顶部。
+
+.
+
+Validate spinlocks vs interrupts behavior.
+
+当加锁动态发生时，锁验证器映射所有加锁规则，该检测由内核的spinlocks、rwlocks、mutexes和rwsems等锁机制触发。不管何时锁合法性检测器子系统检测到一个新加锁场景，它检查新规则是否违反正存在的规则集，如果新规则与正存在的规则集一致，则加入新规则，内核正常运行。如果新规则可能创建一个死锁场景，那么这种创建死锁的条件会被打印出来。
+
+当判断加锁的有效性时，所有可能的"死锁场景"会被考虑到：假定任意数量的CPU、任意的中断上下文和任务上下文群、运行所有正存在的加锁场景的任意组合。在一个典型系统中，这意味着有成千上万个独立的场景。这就是为什么称它为"加锁正确性"验证器，对于所有被观察的规则来说，锁验证器用数学的确定性证明死锁不可能发生，假定锁验证器实现本身正确，并且它内部的数据结构不会被其他内核子系统弄坏。
+
+还有，验证器的属性"所有可能的场景"也使查找变得复杂，特别是多CPU、多上下文竞争比单个上下文规则复杂得多，
+
+为了增加验证器的效率，不是将每个锁实例进行映射，而是映射每个锁类型。例如：内核中所有的结构inode对象有inode->inotify_mutex，如果缓存了10000个inode，将会有10000个锁对象。但->inotify_mutex是单个锁类型，所有->inotify_mutex发生的加锁活动都归入单个锁类型。
+
+Lock-class
+
+验证器操作的基本对象是锁类Lock-class，一个锁类是一组锁，逻辑上有同样的加锁规则，尽管锁可能有多个实例。例如：在结构inode中的一个锁是一个类，而每个节点有它自己的锁类实例。
+
+验证器跟踪锁类的状态和不同锁类之间的依赖性。验证器维护一个有关状态和依赖性是否正确的滚动证据。
+
+不像一个锁实例，锁类lock-class它本身从不消失：当lock-class注册使用后，所有随后锁类的使用都会被附加到该lock-class上。
+http://www.ahbank.org/

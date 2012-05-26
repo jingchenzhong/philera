@@ -3,6 +3,37 @@ LD_PRELOAD，提供了覆写共享库的机会，对于set-user-id/set-group-id 
 也set-user-ID将被加载
 为了被预加载在一个权限的程序，一个库必须被setuid并在信任的库搜索路径上。
 
+如何关闭随机地址空间：
+cat "0" > /proc/sys/kernel/randomize_va_space
+
+如何修改coredump处理方式：
+cat "core" >  /proc/sys/kernel/core_pattern
+
+
+PaX补丁使用了哪些技术：
+PaX-Linux security patch
+PaX offers executable space protection, using (or emulating in operating system software) the functionality of an NX bit (i.e., built-in CPU/MMU support for memory contents execution privilege tagging). It also provides address space layout randomization to defeat ret2libc attacks and all other attacks relying on known structure of a program's virtual memory. 
+PaX局限：
+PaX cannot block fundamental design flaws in either executable programs or in the kernel that allow an exploit to abuse supplied services, as these are in principle undetectable. For example, a script engine which allows file and network access may allow malicious scripts to steal confidential data through privileged users' accounts. PaX also cannot block some format string bug based attacks, which may allow arbitrary reading from and writing to data locations in memory
+using already existing code; the attacker does not need to know any internal addresses or inject any code into a program to execute these types of attacks.
+
+The PaX documentation [1], maintained on the PaX Web site, describes three classes of attacks which PaX attempts to protect against. The documentation discusses both attacks for which PaX will be effective in protecting a system and those for which it will not. All assume a full, position independent executable base with full Executable Space Protections and full Address Space Layout Randomization. Briefly, then, blockable attacks are:
+Those which introduce and execute arbitrary code. These types of attacks frequently involve shellcode.
+Those which attempt to execute existing program code out of the original order intended by the computer programmer(s). This is commonly called a return-to-libc attack, or ret2libc for short.
+Those which attempt to execute existing program code in the intended order with arbitrary data. This issue existed in zlib versions before 1.1.4—a corrupt compressed stream could cause a double-free.
+
+Because PaX is aimed at preventing damage from such attacks rather than finding and fixing the bugs that permit them, it is not yet possible to prevent all attacks; indeed, preventing all attacks is impossible.
+
+The first class of attacks is still possible with 100% reliability in spite of using PaX if the attacker does not need advance knowledge of addresses in the attacked task.
+
+The second and third classes of attacks are also possible with 100% reliability, if the attacker needs advance knowledge of address space layout and can derive this knowledge by reading the attacked task's address space. This is possible if the target has a bug which leaks information, e.g., if the attacker has access to /proc/(pid)/maps. There is an obscurity patch which NULLs out the values for the address ranges and inodes in every information source accessible from userland
+to close most of these holes; however, it is not currently included in PaX.
+
+The second and third classes of attacks are possible with a small probability if the attacker needs advance knowledge of address space layout, but cannot derive this knowledge without resorting to guessing or to a brute force search. The ASLR documentation [2] describes how one can further quantify the "small probability" these attacks have of success.
+
+The first class of attacks is possible if the attacker can have the attacked task create, write to, and mmap() a file. This in turn requires the second attack method to be possible, so an analysis of that applies here as well. Although not part of PaX, it is recommended—among other things—that production systems use an access control system that prevents this type of attack.
+
+Responsible system administration is still required even on PaXified systems. PaX prevents or blocks attacks which exploit memory corruption bugs, such as those leading to shellcode and ret2libc attacks. Most attacks that PaX can prevent are related to buffer overflow bugs. This group includes the most common schemes used to exploit memory management problems. Still, PaX cannot prevent all of such attacks.
 
 
 
