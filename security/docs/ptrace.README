@@ -1,0 +1,12 @@
+ptrace (int _request, pid_t _pid, caddr_t _addr, int _data);
+_request:
+PTRACE_TRACEME:将当前进程切换到停止状态，跟踪已被跟踪的程序将失败。反调试方法就是基于此。
+PTRACE_ATTACE:将指定基础能横切换到停止状态。这样一来，调试器进程就成为该进程的父进程。这个进程需要与调试进程具有相同UID，并且一定不能是setuid/setguid进程
+PTRACE_DETACH:停止调试指定进程，并恢复他的正常工作。
+PTRACE_CONT:在不打断与调试器进程的通信情况下，恢复带有指定PID的别调试进程的运行。如果addr==0,进程从上次停下来地址运行，否则从指定地址运行，_data指定发送给被调试进程的信号数目，0表示无信号
+PTRACE_SINGLESTEP:单步执行指定进程。然后切换到停止状态。addr参数必须是0.
+PTRACE_PEEKTEXT，PTRACE_PEEKDATA：从代码区和被调试进程的地址空间读取机器字。接受addr并返回读取结果
+PTRACE_GETREGS,PTACE_GETFPREGS,PTRACE_gETFPXREGS:将通用寄存器，段寄存器和调试寄存器的值读到有_addr指定的调试器进程的内存区域。
+PTRACE_SETREGS, PTRACE_SETFPREGS, PTRACE_SETFPXREGS, 通过复制由指针_addr指定的内存区域内容来设置被调试进程的寄存器值。
+PTRACE_KILL将sigkill发送给被调试的进程
+
