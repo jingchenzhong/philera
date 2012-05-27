@@ -15,6 +15,12 @@ objcopy
 -I 输入文件格式
 -O 输出文件格式
 -B 输出文件体系
+將一個 JPEG 圖片檔 做成 .o 檔
+$ objcopy -I binary -O elf32-i386 -B i386  image.jpg  image.o
+把執行碼從 ELF 中抽取出來，去除 symbol table, relocation information, .comment section, 和 .note section
+$ objcopy -O binary -S -R .comment -R .note  code.o  code.bin
+只抽取指定的 section
+$ objcopy -O binary -j .text  code.o  code.bin
 
 nm
 -A 列举所有符号表

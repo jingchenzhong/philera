@@ -1,3 +1,7 @@
+如何加密shell：
+gzexe
+shc
+
 参数：echo $1 $2 $3 位置参数
 echo $* 所有位置参数
 echo $# 位置参数个数

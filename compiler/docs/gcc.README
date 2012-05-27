@@ -10,6 +10,16 @@ source code -> scanner -> Tokens -> Parser -> Syntax Tree -> semantic analyzer -
 -> source code optimizer -> intermediate representation -> code generator -> target code -> code optimizer
 -> final target code
 
+#预编译： 
+gcc -E hello.c -o hello.i || cpp hello.c > hello.i
+#编译：
+gcc -S hello.i -o hello.s
+预编译和编译合成一步：/usr/lib/gcc/i686-pc-linux-gnu/4.7.0/cc1 hello.c || gcc -S hello.c -o hello.s
+汇编：as hello.s -o hello.o || gcc -c hello.s -o hello.o
+预编译，编译和汇编合成一步：gcc -c hello.c -o hello.o
+链接：ld -static /usr/lib/crt1.o /usr/lib/crti.o /usr/lib/gcc/i686-linux-gnu/4.7.0/crtbeginT.o -L/usr/lib/gcc/i686-linux-gnu/4.7.0 -L/usr/lib -L/lib hello.o --start-group -lgcc -lgcc_eh -lc --end-group /usr/lib/gcc/i686-linux-gnu/4.7.0/crtend.o /usr/lib/crtn.o
+ld -static crt1.o crti.o crtbeginT.o hello.o -start-group -lgcc -lgcc_eh -lc -end-group crtend.o crtn.o
+
 自定义段：
 __attribute__((section("FOO"))) int global=42;
 __attribute__((section("BAR"))) void foo()
