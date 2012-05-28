@@ -16,21 +16,41 @@ function checkdependency ()
         do
             if [[ $undef == $def ]]
             then
-                echo "$obj needs $lib"
+                echo "[*] $lib is needed by $obj at least"
                 return 0
             fi
         done
     done
  
-    echo "$obj doesn't need $lib"
+    echo "[*] $lib is not used yet"
     return 1
 }
 
 # main entry
-# no argument
+# arg0 - type [static, dynamic]
+# arg1 - [static - code path, dynamic - elf]
 function main ()
 {
-    libs=`find . -name *.a`
+    if [[ $# != 2 ]]
+    then
+        echo "Usage: $0 [static, dynamic] [path , file]"
+        exit 1
+    fi
+
+    if [[ ! -x $2 ]]
+    then
+        echo "path/file is invalide"
+        exit 2
+    fi
+
+    if [[ $1 == "dynamic" ]]
+    then
+        echo "[*] the needed dynamic libs:"
+        ${CROSS_COMIPILE}readelf -d $2 | awk '$2 ~/NEEDED/{ if ($3 == "Shared") print $5;}'
+        exit 0
+    fi
+
+    libs=`find  -name *.a`
     objs=`find . -name *.o`
 
     for lib in $libs
