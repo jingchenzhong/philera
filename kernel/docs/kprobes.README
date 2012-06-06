@@ -1,0 +1,30 @@
+1) What's Kprobes
+Kernel Dynamic Probes (Kprobes) provides a lightweight interface for kernel modules to implant probes and register corresponding probe handlers. A probe is an automated breakpoint that is implanted dynamically in executing (kernel-space) modules without the need to modify their underlying source. Probes are intended to be used as an ad hoc service aid where minimal disruption to the system is required. They are particularly advocated in production environments where the use of interactive debuggers is undesirable. Kprobes also has substantial applicability in test and development environments. During test, faults may be injected or simulated by the probing module. In development, debugging code (for example a printk) may be easily inserted without having to recompile to module under test.
+With each probe, a corresponding probe event handler address is specified. Probe event handlers run as extensions to the system breakpoint interrupt handler and are expected to have little or no dependence on system facilities. Because of this design point, probes are able to be implanted in the most hostile environments -- interrupt-time, task-time, disabled, inter-context switch and SMP-enabled code paths -- without adversely skewing system performance.
+
+2) Kprobes Interfaces
+Kprobes provide several interfaces for kernel space probes, user space probes and kernel watchpoint probes.
+a) Kernel Space Probes Interface:
+register_probe:
+Registration defines the probe location, which must be at an instruction boundary that precedes any associated opcode prefixes. It also defines three call-back addresses for the probing module: 
+The probe-event handler address, which is called as the probed instruction is about to execute. On return Kprobes will single-step the probed instruction.
+The post-execution handler address, which is called when single-stepping completes.
+The fault handler address, which is called if an exception is generated for any instruction within the fault-handler or when Kprobes single-steps the probed instruction.
+register_probe:
+The user has to unregister explicitly all registered probes before removing the probe handling module.
+b) User Space Probes Interface:
+register_kprobe_user:
+Registration of user space probes is defined for a pair of inode and offset within the executable where the probes need to be inserted. It is similar to kernel space probes registration.
+unregister_kprobe_user:
+Every registered user space probe must be unregistered. This interface must be called after all the probes for a given pair of inode and offset are removed.
+insert_kprobe_user:
+The user space probes can be inserted into the pages existing in the memory or pages read via readpage routine of the inode's address space operations or swapping in of the process private page. User has to ensure that the page containing the specified address (user->addr) must be present in the memory before calling. User has to first register user space probes for a given pair of of inode and offset before calling this routine to insert probes.
+remove_kprobe_user:
+This interface is used to remove user space probe from a page at the given address. User has to ensure that the page containing the specified address (user->addr) must be present in the memory before calling this routine. Before unregistering, all the probes inserted at a given inode and offset must be removed.
+c) Kernel Watchpoint Probes Interface:
+register_kwatch:
+Register the kernel watchpoints and returns the debug register number allocated/used for setting up this watch point.
+unregister_kwatch:
+Unregisters the kernel watchpoint probes.
+d) Extensions to Kprobes
+Kprobes has been developed from the full Dynamic Probes patch. It includes the essential mechanism to enable probes in kernel space. Additional patches on top of Kprobes provide support for kernel space probes, watchpoints and user space probes are also available. The char device interface for user space probes application and the RPN Language Interpreter are part of the dprobes external module.

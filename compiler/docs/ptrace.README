@@ -1,0 +1,78 @@
+1)  Gdb’s basis ptrace:
+ptrace is a system call found in several Linux. By using ptrace one process can control another, enabling the controller to inspect and manipulate the internal state of its target. ptrace is used by debuggers and other code-analysis tools, mostly as aids to software development.
+2)	Usage:
+ptrace is used by debuggers (such as gdb and dbx), by tracing tools like strace and ltrace, and by code coverage tools. ptrace is also used by specialized programs to patch running programs, to avoid unfixed bugs or to overcome security features. It can further be used as a sandbox and as a runtime environment simulator (like emulating root access for non-root software).
+By attaching to another process using the ptrace call, a tool has extensive control over the operation of its target. This includes manipulation of its file descriptors, memory, and registers. It can single-step through the target's code, can observe and intercept system calls and their results, and can manipulate the target's signal handlers and both receive and send signals on its behalf. The ability to write into the target's memory allows not only its data store to be changed, but also the applications own code segment, allowing the controller to install breakpoints and patch the running code of the target.
+As the ability to inspect and alter another process is very powerful, ptrace can attach only to processes that the owner can send signals to (typically only their own processes); the superuser account can ptrace almost any process (except init). In Linux systems that feature capabilities based security, the ability to ptrace is further limited by the CAP_SYS_PTRACE capability.
+
+3)	Sample example about tracing specified process by ourself:
+File: my_ptrace.c
+Target: execute “ls” command step by step, and calculate how many instructions are running in “ls”
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <sys/ptrace.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <errno.h>
+
+int main (int argc, char *argv[])
+{
+    int pid = 0;
+    int wait_val = 0;
+    long long counter = 1;
+
+    switch (pid = fork()) {
+        case 0:
+            ptrace (PTRACE_TRACEME, 0, 0, 0);
+
+            execl ("/bin/ls", "ls", 0);
+            break;
+        default:
+            wait (&wait_val);
+
+            while (WIFSTOPPED(wait_val)) {
+                if (ptrace (PTRACE_SINGLESTEP, pid, (caddr_t)1, 0)) break;
+
+                wait (&wait_val);
+
+                counter ++;
+            }
+    }
+    printf ("==%lld\n", counter);
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If you want to get the register dump during “ls” running, can give request PTRACE_GETREGS, PTRACE_GETFPREGS,
+Of course, even you can hotpatch “ls” with request TRACE_SETREGS, PTRACE_SETFPREGS
+4)	Anti-Debug Skills
+Let’s think more, do we have some skills to prevent debugging on our elf? Of course, there is a simple way to check if the elf is under debugging.
+check extra file id
+normal file only have stdin, stdout, and stderr, the debugger will generate more file id. So trying to close extra id likes 3, we know if the other user is trying to debug us.
+If (close(3) == -1) printf (“all ok\n”)
+Else printf (“debugger is debugging me now\n”)
+b.	anti-debug by SIGTRAP signal
+when debugger is debugging the elf, it doesn’t allow elf catch SIGTRAP signal, so elf can register SIGTRAP signal and simulate trap interrupt.
+Takes Intel i368 as example:
+#include <signal.h>
+Void hanlder (int n) { /* expection handler */ }
+
+main ()
+{
+/* catch the SIGTRAP INT03 */
+Signal (SIGTRAP, handler);
+
+/* trigger INT 03, passing control to handler or to debugger */
+__asm__(“int3”);
+
+//the encrypted part of the program which must be decrypted by handler
+Printf (“lslfj\n”);
+}
+c.	checksum on code for software breakpoint
+we know the software breakpoint will replace the trap instruction (INT 03H) with original code, so incorrect checksum indicates the debugger is running
+d.	let’s check ptrace limitation
+Actually ptrace is not allowed to be invoked twice, because HW could not support debug one debugged process. Let’s debug ourself.
+5)	Reference:
+Man ptrace
+

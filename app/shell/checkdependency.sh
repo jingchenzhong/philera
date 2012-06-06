@@ -7,7 +7,7 @@ function checkdependency ()
 {
     local obj=$1
     local lib=$2
-    undefs=`${CROSS_COMIPLE}readelf -s $obj | awk '$5 ~ /GLOBAL/{ if ($7 == "UND") print $8;}'`
+    undefs=`${CROSS_COMPILE}readelf -s $obj | awk '$5 ~ /GLOBAL/{ if ($7 == "UND") print $8;}'`
     defs=`${CROSS_COMPILE}readelf -s $lib | awk '$5 ~ /GLOBAL/{if ($7 != "UND") print $8;}'`
 
     for undef in $undefs
@@ -46,12 +46,17 @@ function main ()
     if [[ $1 == "dynamic" ]]
     then
         echo "[*] the needed dynamic libs:"
-        ${CROSS_COMIPILE}readelf -d $2 | awk '$2 ~/NEEDED/{ if ($3 == "Shared") print $5;}'
+        ${CROSS_COMPILE}readelf -d $2 | awk '$2 ~/NEEDED/{ if ($3 == "Shared") print $5;}'
         exit 0
     fi
 
     libs=`find  -name *.a`
     objs=`find . -name *.o`
+
+    echo "[*] libs:"
+    echo "$libs"
+    echo "[*] objs:"
+    echo "$objs"
 
     for lib in $libs
     do
