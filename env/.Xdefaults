@@ -5,8 +5,8 @@
 !Xft.dpi:96
 !…Ë÷√◊÷ÃÂ
 !URxvt.font:-misc-fixed-bold-r-normal--14-*-*-*-*-*-iso10646-1,xft:WenQuanYi Bitmap Song:size=10
-URxvt.font:xft:Bitstream Vera Sans Mono:Bold:size=14, \
-                                             xft:WenQuanYi Zen Hei:size=16, \
+URxvt.font:xft:Bitstream Vera Sans Mono:Bold:size=12, \
+                                             xft:WenQuanYi Zen Hei:size=12, \
                                              9x15bold, \
                                              -misc-fixed-bold-r-normal--15-140-75-75-c-90-iso10646-1, \
                                              -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso10646-1, \
