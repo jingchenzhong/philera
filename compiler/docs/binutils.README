@@ -21,9 +21,230 @@ $ objcopy -I binary -O elf32-i386 -B i386  image.jpg  image.o
 $ objcopy -O binary -S -R .comment -R .note  code.o  code.bin
 只抽取指定的 section
 $ objcopy -O binary -j .text  code.o  code.bin
+objcopy用于将object的部分获全部内容拷贝到另一个object，从而可以实现格式的变换。
+
+objcopy可用用于将文件转换成S-record格式或者raw二进制格式。
+
+例如，
+
+         xxxx-elf-objcopy –O srec test.o test.s19
+
+则将test.o转换成s-record文件中。通常涉及到text段。
+
+         xxxx-elf-objcopy –O binary test.o test.bin
+
+则将test.o转换成raw binary文件格式。
+
+       当将object文件转换成raw binary格式时，通常将去除掉symbols和relocation信息。在生成s-record过程中，有时需要用选项“-S”，“-R”去除掉binary文件，s-record文件不需要的相应信息。
+
+此外，还需要注意到使用objcopy不能够改变大、小endian。
+
+  
+选项	
+Desc
+
+infile/outfile	
+源文件/目标文件
+
+-I bfdname
+
+--input-target=bfdname	
+输入文件的bfdname,可取值elf32-little，elf32-big等，可用用objdump –I查看相应的信息
+
+-O bfdname
+
+--output-target=bfdname	
+输出文件的bfdname
+
+-F bfdname
+
+--target=bfdname	
+指定输入、输出文件的bfdname，目标文件格式
+
+-j sectionname
+
+--only-section=sectionname	
+只将由sectionname指定的section拷贝到输出文件
+
+-R sectionname
+
+--remove-section=sectionname	
+去除掉由sectionname指定的section
+
+-S
+
+--strip-all	
+去掉源文件的符号信息和relocation信息
+
+-g
+
+--strip-debug	
+去除掉调试符号信息和相关的段
+
+-K symbolname
+
+--keep-symbol=symbolname	
+保留由symbolname指定的符号信息
+
+-N symbolname
+
+--strip-symbol=symbolname	
+去除掉由symbolname指定的符号信息
+
+-G symbolname
+
+--keep-global-symbol=symbolname
+
+-L symbolname
+
+--localize-symbol=symbolname
+
+-W symbolname
+
+--weaken-symbol=symbolname
+
+-w
+
+--wildcard
+
+-x
+
+--discard-all
+
+-X
+
+--discard-locals	
+处理符号
+
+-b byte
+
+--byte=byte	
+每byteth byte中保留1 byte
+
+-i interleave
+
+--interleave=interleave	
+每隔interleave字节拷贝1 byte
+
+--gap-fill val	
+在section中填充val
+
+--set-start val	
+设定新文件的start address
+
+--change-start incr
+
+--adjust-start incr	
+调整start address
+
+--change-address incr
+
+--adjust-vma incr	
+调整所有sections的VMA(virtual memory address)和LMA(linear memory address)。
+
+--change-section-address 
+
+        section{=,+,-}val
+
+--adjust-section-vma section
+
+       {=,+,-}val	
+调整指定section的VMA/LMA地址
+
+--set-section-flags section=flag	
+指定指定section的flag，flag的取值可以alloc，contents, load, noload, readonly, code, data, rom, share, debug
+
+--add-section sectionname=filename	
+添加一个section，该section的内容为filenmae的内容
+
+--rename-section oldname=
+
+    newname[,flags]	
+更改section的名
+
+-V
+
+--version	
+objcopy的version number
+插入一段二进制文件：
+phil~/repos/my_bible $ objcopy -I binary -O elf32-i386 -B i386 images/caution.png image.o
+phil~/repos/my_bible $ objdump -ht image.o
+
+image.o:     file format elf32-i386
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .data         000004e2  00000000  00000000  00000034  2**0
+                    CONTENTS, ALLOC, LOAD, DATA
+                    SYMBOL TABLE:
+                    00000000 l    d  .data  00000000 .data
+                    00000000 g       .data  00000000 _binary_images_caution_png_start
+                    000004e2 g       .data  00000000 _binary_images_caution_png_end
+                    000004e2 g       *ABS*  00000000 _binary_images_caution_png_size
+
+插入二进制，并指定段：
+objcopy -I binary -O elf32-i386 -B i386 --rename-section .data=.rodata,alloc,load,readonly,data,contents images/caution.png image.o
+phil~/repos/my_bible $ objdump -ht image.o
+
+image.o:     file format elf32-i386
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .rodata       000004e2  00000000  00000000  00000034  2**0
+                    CONTENTS, ALLOC, LOAD, READONLY, DATA
+                    SYMBOL TABLE:
+                    00000000 l    d  .rodata        00000000 .rodata
+                    00000000 g       .rodata        00000000 _binary_images_caution_png_start
+                    000004e2 g       .rodata        00000000 _binary_images_caution_png_end
+                    000004e2 g       *ABS*  00000000 _binary_images_caution_png_size
+
+
+如何提取代码段：
+objcopy -O binary -j .text simaplesection.o text.bin
+如何反编译指定二进制文件：
+objdump -b binary -m i386 -D aa
+如何添加自定义段：
+__attribute__((section("FOO"))) int global = 43;
+__attribute__((section("BAR"))) void foo () {}
+
+
+
+C++编译器提供了extern "C" 有一个声明或定义C的符号
+C++定义了宏__cplusplus来区别C编译器
+比如
+#ifdef __cplusplus
+extern "C" {
+#endif
+    void *memset (void*, int, size_t);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+弱符号和强符号：
+编译器默认任何函数和初始化了的全局变量为强符号，可以使用
+__attribute__((weak))来定义弱符号
+不允许强符号被定义多次
+如果一个符号在目标文件里是强符号，其它文件中是弱符号，选择强符号
+如果一个符号在所有目标文件中都是弱符号，选择占空间最大的一个
+
+弱引用和强引用：
+链接器不认为未定义的弱符号是错误，链接器默认其值为0.
+GCC可使用__attribute__((weakref)) void foo();声明对一个外部符号使用弱引用。
+
+弱符号可以让用户定义自己版本的库函数
+或者用户弱引用某些扩展功能的函数，去掉某些功能也能正常链接。
+
+
+
 
 nm
 -A 列举所有符号表
 
 c++filt <symbole>
 解析c++符号到函数名
+能够转换被修饰过的符号名
+
+strip 去掉调试信息
+
