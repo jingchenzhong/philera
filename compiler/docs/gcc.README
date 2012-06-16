@@ -20,6 +20,44 @@ gcc -S hello.i -o hello.s
 链接：ld -static /usr/lib/crt1.o /usr/lib/crti.o /usr/lib/gcc/i686-linux-gnu/4.7.0/crtbeginT.o -L/usr/lib/gcc/i686-linux-gnu/4.7.0 -L/usr/lib -L/lib hello.o --start-group -lgcc -lgcc_eh -lc --end-group /usr/lib/gcc/i686-linux-gnu/4.7.0/crtend.o /usr/lib/crtn.o
 ld -static crt1.o crti.o crtbeginT.o hello.o -start-group -lgcc -lgcc_eh -lc -end-group crtend.o crtn.o
 
+
+如何添加自定义段：
+__attribute__((section("FOO"))) int global = 43;
+__attribute__((section("BAR"))) void foo () {}
+
+
+
+C++编译器提供了extern "C" 有一个声明或定义C的符号
+C++定义了宏__cplusplus来区别C编译器
+比如
+#ifdef __cplusplus
+extern "C" {
+#endif
+    void *memset (void*, int, size_t);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+弱符号和强符号：
+编译器默认任何函数和初始化了的全局变量为强符号，可以使用
+__attribute__((weak))来定义弱符号
+不允许强符号被定义多次
+如果一个符号在目标文件里是强符号，其它文件中是弱符号，选择强符号
+如果一个符号在所有目标文件中都是弱符号，选择占空间最大的一个
+
+弱引用和强引用：
+链接器不认为未定义的弱符号是错误，链接器默认其值为0.
+GCC可使用__attribute__((weakref)) void foo();声明对一个外部符号使用弱引用。
+
+弱符号可以让用户定义自己版本的库函数
+或者用户弱引用某些扩展功能的函数，去掉某些功能也能正常链接。
+
+
+
+
+
 自定义段：
 __attribute__((section("FOO"))) int global=42;
 __attribute__((section("BAR"))) void foo()
@@ -62,6 +100,8 @@ crtend.o: __do_global_ctors_aux, .init
 
 ld crt1.o crti.o [user_objs] [system_libraries] crtn.o
 
+GCC的"-fno-common"允许把所有未初始化全局变量不以COMMON块的形式处理，或者使用__attribute__扩展：
+int global __attribute__((nocommon));，一旦一个未初始化的全局变量不以COMMON块形式存在，他们相当于一个强符号。
 
 
 弱符号和弱引用：库中定义的弱符号可以被用户定义的强符号所覆盖，从而使程序
@@ -83,3 +123,25 @@ int main ()
         printf ("This is single-thread version\n");
     }
 }
+
+
+
+GCC的"-fno-common"允许把所有未初始化全局变量不以COMMON块的形式处理，或者使用__attribute__扩展：
+int global __attribute__((nocommon));，一旦一个未初始化的全局变量不以COMMON块形式存在，他们相当于一个强符号。
+
+
+由于现在的库都很大，一个目标文件包含很多函数，当我们需要用到某个目标文件中的一个函数或变量，就需要把它整个链接进去，为了不链接哪些没有用的函数。GCC提供了两个选项"-ffunction-sections"和"-fdata-sections"将每个函数和变量分别保持到独立的段中。
+
+GCC会将只使用一个字符串的参数printf替换为内建的puts函数来提高速度，可使用-fno-builtin来避免。
+各种地址引用
+
+模块内部   相对跳转和调用        相对地址访问
+模块外部   间接跳转和调用（GOT） 间接访问（GOT）
+-fpic 指示GCC产生地址无关代码，产生代码相对较快，较小，但跟硬件平台相关
+-fPIC 通常使用这个产生地址无关代码
+
+如何判断一个动态文件是否是PIC，只要产看有没有任何代码重定位段，TEXTREL表示代码段重定位表地址。
+
+地址无关技术也可应用于普通可执行程序,-fPIE或-fpie`
+
+

@@ -203,41 +203,6 @@ Idx Name          Size      VMA       LMA       File off  Algn
 objcopy -O binary -j .text simaplesection.o text.bin
 如何反编译指定二进制文件：
 objdump -b binary -m i386 -D aa
-如何添加自定义段：
-__attribute__((section("FOO"))) int global = 43;
-__attribute__((section("BAR"))) void foo () {}
-
-
-
-C++编译器提供了extern "C" 有一个声明或定义C的符号
-C++定义了宏__cplusplus来区别C编译器
-比如
-#ifdef __cplusplus
-extern "C" {
-#endif
-    void *memset (void*, int, size_t);
-
-#ifdef __cplusplus
-}
-#endif
-
-
-弱符号和强符号：
-编译器默认任何函数和初始化了的全局变量为强符号，可以使用
-__attribute__((weak))来定义弱符号
-不允许强符号被定义多次
-如果一个符号在目标文件里是强符号，其它文件中是弱符号，选择强符号
-如果一个符号在所有目标文件中都是弱符号，选择占空间最大的一个
-
-弱引用和强引用：
-链接器不认为未定义的弱符号是错误，链接器默认其值为0.
-GCC可使用__attribute__((weakref)) void foo();声明对一个外部符号使用弱引用。
-
-弱符号可以让用户定义自己版本的库函数
-或者用户弱引用某些扩展功能的函数，去掉某些功能也能正常链接。
-
-
-
 
 nm
 -A 列举所有符号表

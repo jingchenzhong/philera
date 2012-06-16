@@ -1,4 +1,3 @@
-#
 export LC_CTYPE="zh_CN.UTF-8"
 
 export GTK_IM_MODULE="fcitx"
@@ -17,7 +16,6 @@ export OPERA_KEEP_BLOCKED_PLUGIN=0
 
 alias ls='ls --color=auto'
 alias vi='vim'
-alias xpdf='xpdf -papercolor "#C5E592"'
 # prompt
 # PS1='[\u@\h \W]\$ '
 PS1='\[\e[0;32m\]\u\[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[0;31m\]\$ \[\e[m\]\[\e[0;32m\]'
@@ -25,6 +23,7 @@ PS1='\[\e[0;32m\]\u\[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[0;31m\]\$ \[\e[m\]\[\e[0;
 
 # modified commands
 alias diff='colordiff'
+alias xpdf='xpdf -papercolor "#e2f1e4" -z "width" -cont'
 alias opera='opera -fullscreen -nolirc -nowin -noargb -nomail -nosession ' 
 export GREP_COLOR="1;32"
 alias grep='grep --color=auto'
@@ -103,5 +102,4 @@ export HISTCONTROL=ignorespace
 
 complete -cf sudo
 complete -cf man
-
 
