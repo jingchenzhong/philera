@@ -1,0 +1,3 @@
+To install these tarball dictionaries, do this: 
+tar -xjvf a.tar.bz2
+mv a /usr/share/stardict/dic
