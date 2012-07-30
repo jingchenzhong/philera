@@ -41,8 +41,8 @@ if has("cscope")
     if filereadable("./cscope.out")
         cs add ./cscope.out  
     " else add the database pointed to by environment variable 
-    else
-        cs add ~/db/cscope.out
+    elseif filereadable("/home/phil/db/cscope.out")
+        cs add /home/phil/db/cscope.out
     endif
 
     " show msg when any other cscope db added

@@ -803,8 +803,8 @@ let Tlist_Exit_OnlyWindow=1
 "Which tags files CTR-] will search
 if filereadable("./tags")
   set tags=./tags
-else
-  set tags=~/db/tags
+elseif filereadable("/home/phil/db/tags")
+  set tags=/home/phil/db/tags
 endif
 
 "if has("win32")
