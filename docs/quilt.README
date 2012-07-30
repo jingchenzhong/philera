@@ -1,0 +1,75 @@
+使用quilt时，我们会在一个完整的源代码树里工作。只要我们 在源代码树里使用了quilt命令，quilt就会在源代码树的根目录建立两个特殊目录：patches和.pc。quilt在patches目录保存它 管理的所有补丁。quilt用.pc目录保存自己的内部工作状态，用户不需要了解这个目录。
+
+patches/series文件记录了quilt当前管理的补丁。补丁按照加入的顺序排列，早加入的补丁在前。quilt用堆栈的概念管理补丁的应用。
+
+
+
+
+
+2.2 导入补丁
+
+我们把 old-prj.tar.bz2 想象成Linux内核，我们把它解压后，进入代码树的根目录：
+
+$ mkdir qtest; cd qtest; tar xvjf ../old-prj.tar.bz2; mv old-prj prj; cd prj 
+
+在修改代码前，我们通常要先打上官方补丁。在quilt中，可以用import命令导入补丁：
+
+$ quilt import ../../prj.diff 
+
+Importing patch ../../prj.diff (stored as prj.diff)
+
+    执行improt命令后， prj 目录会多出一个叫 patches 的子目录：
+
+    $ find patches/ -type f
+
+    patches/prj.diff
+
+    patches/series
+
+    quilt在这个目录存放所有补丁和前面介绍的series文件。quilt的大多数命令都可以在代码树的任意子目录运行，不一定要从根目录运行。我们可以用applied命令查询当前已应用的补丁。
+
+    $ quilt applied 
+
+    No patches applied
+
+    目前还没有应用任何补丁。unapplied命令查询当前还没有应用的补丁，top命令查询栈顶补丁，即已应用的最新补丁：
+
+    $ quilt unapplied
+
+    prj.diff
+
+    $ quilt top
+
+    No patches applied
+
+    我们可以使用push命令应用补丁，例如：
+
+    $ quilt push -a
+
+    Applying patch prj.diff
+
+    patching file src/drv/drv1.h
+
+    patching file src/sys/sys1.c
+
+    patching file src/sys/sys1.h
+
+    patching file src/usr/usr1.c
+
+    patching file src/usr/usr1.h
+
+    Now at patch prj.diff 
+
+    push的"-a"参数表示应用所有补丁。在使用push命令后，prj 目录会多了一个叫.pc的隐含子目录。quilt用这个目录保存内部状态，用户不需要了解这个目录。应用补丁后，我们再使用applied、unapplied和top命令查看：
+
+    $ quilt applied
+
+    prj.diff
+
+    $ quilt unapplied
+
+    File series fully applied, ends at patch prj.diff
+
+    $ quilt top
+
+    prj.diff
