@@ -84,15 +84,12 @@ export PATH=/home/phil/priv/bin:$PATH
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk/jre
 export BROWSER=w3m
 export EDITOR=vim
-#http_proxy="http://10.159.32.155:8080"
-#http_proxy="http://10.144.1.10:8080"
-#ftp_proxy=$http_proxy
-#export http_proxy ftp_proxy
 export TERM=xterm
 export PAGER=less
 export VISUAL=vim
 export EDITOR=vim
-export CDPATH="$HOME:$HOME/repos/:$HOME/mydoc"
+export CDPATH=".:$HOME:$HOME/repos/:$HOME/mydocs"
+#. setproxy
 
 
 # erase dup history
