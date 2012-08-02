@@ -43,3 +43,4 @@ Rxvt.transparent:true
 Rxvt.shading:30
 URxvt.title:RXVT-UNICODE
 Urxvt.preeditType:Root
+URxvt.perl-ext-common: default,clipboard
