@@ -1,21 +1,21 @@
 #!/bin/bash
 
-CROSS_COMPILE=""
 
 if (( $# != 1 ))
 then
-    echo "Usage: $0 <elf with debug info>"
+    echo "Usage: `basename $0` <elf with debug info>"
     echo "NOTE: export CROSS_COMPILE=powerpc-linux-gnu- for embeded system"
     exit 3
 fi
 
-dwarf_file=$1.dwarf
+dwarf_file=`basename $1`.dwarf
 rm -f $dwarf_file
 
-${CROSS_COMPILE}objdump --dwarf=info $1 > $dwarf_file
+${CROSS_COMPILE}objdump -W $1 > $dwarf_file
 if (( $? != 0 ))
 then
-    echo "ELF file could not be recongnized by $(CROSS_COMPILE)objdump"
+    echo "ELF file could not be recongnized by ${CROSS_COMPILE}objdump"
+    echo "NOTE: export CROSS_COMPILE=powerpc-linux-gnu- for embeded system"
     exit 4
 fi
 
@@ -30,7 +30,7 @@ member_offset=0
 
 while read line_str
 do
-    if [[ $line_str =~ "DW_TAG_structure_type" ]]
+    if [[ $line_str == *"(DW_TAG_structure_type)"* ]]
     then
         isstruct=1
         continue
@@ -54,7 +54,7 @@ do
             continue
         fi
 
-        if [[ $line_str =~ "DW_TAG_member" ]]
+        if [[ $line_str == *"(DW_TAG_member)"* ]]
         then
             ismember=1
             isstruct=0
