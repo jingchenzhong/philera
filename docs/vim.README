@@ -27,3 +27,11 @@ vim -x <filename>
 
 vi +/pattern file 打开文件并到匹配位置
 
+
+
+防止粘贴时自动格式化
+:set paste
+粘贴
+:set nopaste
+或者
+set pastetoggle <F3>
