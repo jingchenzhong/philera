@@ -24,9 +24,13 @@ int main (int argc, char *argv[])
     lib_init (traced_process);
 
     getregs(traced_process, &regs);
-    printf ("NIP:0x%08x, LINK:0x%08x\n", regs.nip, regs.link);
+    long *ptr = (long *)&regs;
+    for (i = 0;i < sizeof (struct pt_regs) / sizeof (long);i ++) {
+        printf ("0x%08x\n", *(ptr ++));
+    }
     getdata(traced_process, addr, data, 256);
 
+    i = -1;
     while (++i < 256) {
         printf ("0x%02x\n", *(data+i));
     }

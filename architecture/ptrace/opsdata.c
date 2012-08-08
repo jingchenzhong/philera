@@ -75,13 +75,13 @@ void putdata(pid_t child, long addr,
 void getregs (pid_t child, struct pt_regs *regs)
 {
     ptrace(PTRACE_GETREGS, child,
-           NULL, &regs);
+           NULL, regs);
 }
 
 void setregs (pid_t child, struct pt_regs *regs)
 {
     ptrace(PTRACE_SETREGS, child,
-           NULL, &regs);
+           NULL, regs);
 }
 
 void lib_destroy (pid_t child)
