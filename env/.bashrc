@@ -22,6 +22,7 @@ PS1='\[\e[0;32m\]\u\[\e[m\]\[\e[1;34m\]\w\[\e[m\] \[\e[0;31m\]\$ \[\e[m\]\[\e[0;
 #PS1='\[\e[1;31m\][\u@\h \W]\$\[\e[0m\]'
 
 # modified commands
+alias mc=' mc -S /usr/share/mc/skins/gotar.ini'
 alias diff='diff -urN'
 alias xpdf='xpdf -papercolor "#e2f1e4" -z "width" -cont'
 alias opera='opera -fullscreen -nolirc -nowin -noargb -nomail -nosession ' 
