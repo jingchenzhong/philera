@@ -1,0 +1,3 @@
+#!/bin/sh 
+echo "Excuting qemu-ifup"
+ifconfig $1 10.0.0.1
