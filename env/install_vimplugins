@@ -1,2 +1,2 @@
-yaourt -S extra/vim-buftabs community/vim-a community/vim-bufexplorer community/vim-colorsamplerpack community/vim-doxygentoolkit community/vim-guicolorscheme community/vim-minibufexpl community/vim-nerdcommenter community/vim-nerdtree community/vim-omnicppcomplete community/vim-project community/vim-taglist community/vim-ultisnips community/vim-vcscommand community/vim-workspace 
+yaourt -S vim-buftabs vim-a vim-bufexplorer vim-colorsamplerpack vim-doxygentoolkit vim-guicolorscheme vim-minibufexpl vim-nerdcommenter vim-nerdtree vim-omnicppcomplete vim-project vim-taglist vim-ultisnips vim-vcscommand vim-workspace 
 yaourt -S wqy-bitmapfont wqy-zenhei ttf-arphic-ukai ttf-arphic-uming ttf-fireflysung ttf-bitstream-vera

@@ -101,3 +101,9 @@ export HISTCONTROL=ignorespace
 complete -cf sudo
 complete -cf man
 
+alias cvsup='cvs update -d'
+alias cvsdiff='cvs diff -pdu10'
+
+export CVS_RSH=ssh
+export CVSROOT=:ext:$USER@hq-dev3.aerohive.com.cn:/aerohive/aeroscvsrep
+#export CVSROOT=:ext:$USER@hq-dev1.aerohive.com:/aerohive/aeroscvsrep
