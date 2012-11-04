@@ -1,0 +1,11 @@
+[Unit]
+Description=mldonkey
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/bin/su phil -s /bin/bash -c "/usr/bin/mlnet &"
+ExecStop=/usr/bin/killall mlnet&
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+[Unit]
+Description=Network Connectivity
+Wants=network.target
+Before=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/bash /home/phil/priv/bin/enable_wifi.sh &
+ExecStop=/sbin/ip link set dev wlan0 down
+
+[Install]
+WantedBy=multi-user.target
