@@ -1,0 +1,15 @@
+MAILDIR=$HOME/mail
+DEFAULT=$MAILDIR/inbox/
+LOGFILE=$MAILDIR/log
+
+:0:
+* ^To: ygong@aerohive.com
+ygong/
+
+:0:
+* ^From: ygong@aerohive.com
+ygong/
+
+:0:
+* ^From: ykang@aerohive,com
+ykang/
