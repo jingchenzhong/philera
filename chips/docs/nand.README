@@ -1,0 +1,30 @@
+NAND Flash以bit方式保存在memory cell，一般一个cell只存储一个bit。
+这些cell以8个或16个为单位连成bit line，形成所谓byte(x8)或word(x16)。
+这个就是NAND Flash的位宽。
+这些line会组成page，以三星的K9F1208U0M为例，每页528Bytes(512B(main
+area)+16B(spare area)),每32个page形成一个block(32*528B)。
+K9F1208U0M有4096个block，故总容量4096*32*528B=66MB,但其中2MB为spare
+area来保存ECC等额外信息，故实际可用容量为64MB。
+
+NAND Flash以page为单位读写数据，而以block为单位擦除数据。
+
+NAND Flash寻址方式：
+512B需要9bit来表示，对于528B系列NAND Flash，512
+三类地址：
+column address：寄存器开始地址，列地址，地址的低8位
+page address：页地址
+block address：块地址
+I/O[7:0]充当地址，数据，命令复用端口，所以每次传地址只能传8位，而
+NAND Flash的地址位为26位，因此读写一次NAND Flash需要传送4次(A[7:0]
+A[16:9] A[24:17] A[25])
+
+一页528B，每页中最后16字节用于NAND Flash执行完命令后设置状态用，剩余
+512B又分为前半部(1st half page register)和后半部(2nd half page register)
+可以通过NAND Flash对于1st half和2nd half以及OOB进行定位，通过NAND
+Flash内置的指针指向各自的首地址。
+
+NAND Flash每一个位只能从1变为0，在进行写操作前必须对相应的块擦除
+OOB部分的第六个字节（517字节）标志是否坏块，如果不是坏块值为FF
+除OOB第六字节外，通常至少把OOB前三字节存放NAND Flash硬件ECC码
+
+reference: http://www.eefocus.com/Holden_smile/blog/2012-05/229799_6a188.html
