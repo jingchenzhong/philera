@@ -1,0 +1,5 @@
+FCM - Flash Control Machine
+FCM提供了粘合接口给并行总线NAND Flash EEPROM设备.
+FCM包含三个基本配置寄存器组,BRn ORn, FMR
+命令,地址字节和数据都在LAD[0:7]上传输.
+
