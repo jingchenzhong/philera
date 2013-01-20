@@ -1,0 +1,14 @@
+Marvell Alaska 88E1322M - 
+Integrated 10/100/1000 Mbps
+Ethernet Transceiver with LinkCryptTM
+(IEEE 802.1ae based MACsec)
+
+SGMII(System) to Auto-Media Copper/SGMII (MODE[2:0] = 110)
+
+10/100/1000 Mbps  P0_S_IN/OUTP/N                       ==> <=======> MAG <==>RJ45
+                   <=============>  Port0 <===> Port1 |
+Ethernet MAC                                           ==> <=======> SFP
+
+Port0 and Port2 SGMII interface as System interface
+Port1 and Port3 SGMII/Fiber and MDI interface as Media interface for 100BASE-FX only or Auto-Media (SGMII/Fiber/Copper) applications
+
