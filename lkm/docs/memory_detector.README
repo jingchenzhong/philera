@@ -1,0 +1,23 @@
+Valgrind:
+as non-intrusive as possible, works directly with existing executables.
+
+valgrind [valgrind-options] your-prog [your-prog-options]
+
+valgrind --tool=memcheck ls -l
+
+valgrind.org
+
+Dmalloc:
+providing powerfull debugging facilities configurable at runtime
+
+dmalloc.com
+
+leakmon:
+github.com/daynix/bricklets/wiki/LeakMon-bricklet-documentation
+
+kmemleak:
+Documentation/memleak.txt
+
+KEDR:
+for dynamic analysis of kernel modules (device drivers, file system modules, etc)
+
