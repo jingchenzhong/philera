@@ -226,10 +226,10 @@ au GUIEnter * simalt ~x
 endif
 endif
 let psc_style='cool'
-colorscheme desertEx
+"colorscheme desertEx
 else
 set background=dark
-colorscheme desertEx
+"colorscheme desertEx
 endif
 
 "Some nice mapping to switch syntax (useful if one mixes different languages in one file)
@@ -642,8 +642,8 @@ map <leader>t2 :set shiftwidth=2<cr>
 map <leader>t4 :set shiftwidth=4<cr>
 map <leader>t8 :set shiftwidth=8<cr>
 
-au FileType html,python,vim,javascript setl shiftwidth=2
-au FileType html,python,vim,javascript setl tabstop=2
+au FileType html,python,vim,javascript setl shiftwidth=4
+au FileType html,python,vim,javascript setl tabstop=4
 
 """"""""""""""""""""""""""""""
 " => Indent
@@ -1049,5 +1049,17 @@ fu! SmartTOhtml()
   exe ":bd"
 endf
 set vb
+
+" Vundle
+set nocompatible               " be iMproved
+filetype off                   " required!
+
+call vundle#rc()
+
+Bundle 'Textile-for-VIM'
+Bundle 'preview'
+
+filetype plugin indent on     " required! 
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " vim: set et ft=vim tw=78 path+=$VIMFILES/* tags+=$VIMRUNTIME/doc/tags:

@@ -4,8 +4,8 @@
 !设置字体分辨率
 !Xft.dpi:96
 !设置字体
-!URxvt.font:-misc-fixed-bold-r-normal--14-*-*-*-*-*-iso10646-1,xft:WenQuanYi Bitmap Song:size=10
-URxvt.font:xft:Bitstream Vera Sans Mono:Bold:size=12, \
+URxvt.font:xft:Source Code Pro Black:Bold:size=13,\
+                                         xft:Bitstream Vera Sans Mono:Bold:size=12, \
                                              xft:WenQuanYi Zen Hei:size=12, \
                                              9x15bold, \
                                              -misc-fixed-bold-r-normal--15-140-75-75-c-90-iso10646-1, \

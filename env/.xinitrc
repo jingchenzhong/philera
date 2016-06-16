@@ -28,7 +28,7 @@ remind -z -k'gxmessage -title "reminder" %s &' ~/.reminders &
 #vmware-user-suid-wrapper&
 #conky &
 
-exec dwm
+#exec dwm
 #exec awesome 
-#startlxde
+startlxde
 
